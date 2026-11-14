@@ -12,7 +12,17 @@ DEST="${HERMES_HOME:-$HOME/.hermes/profiles/$PROFILE}"
 [ -d "$DEST" ] || "$HERMES" profile create "$PROFILE"
 mkdir -p "$DEST/skills" "$DEST/scripts"
 cp "$SRC/SOUL.md" "$DEST/SOUL.md"
-cp -a "$SRC/skills/." "$DEST/skills/"     # no --delete: keeps skills Hermes created itself
+# Remove skills that THIS repo deployed before but no longer has (renamed/deleted),
+# while keeping skills Hermes created itself. The manifest records what the repo owns.
+MANIFEST="$DEST/.repo-managed-skills"
+if [ -f "$MANIFEST" ]; then
+  while IFS= read -r old; do
+    [ -n "$old" ] && [ ! -d "$SRC/skills/$old" ] && rm -rf "$DEST/skills/$old" && echo "removed stale skill: $old"
+  done < "$MANIFEST"
+fi
+cp -a "$SRC/skills/." "$DEST/skills/"
+( cd "$SRC/skills" && ls -1d */ | sed 's#/$##' ) > "$MANIFEST"
 cp -a "$SRC/scripts/." "$DEST/scripts/"
+find "$DEST/scripts" -name "__pycache__" -prune -exec rm -rf {} +
 echo "Synced SOUL.md, skills/, scripts/ -> $DEST"
 echo "Next: merge mcp_servers from hermes-profile/config.yaml, then: hermes config check && hermes mcp test noc_mcp && deployment/cron/install-cron.sh"

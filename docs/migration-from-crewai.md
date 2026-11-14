@@ -18,13 +18,13 @@ Hermes fixes this only together with: one agent in an investigation loop (`alert
 | `router.py` (deterministic by alert type) | `event-ingestion/grafana_webhook.py` | Keep logic; it now picks the domain skill hint and forwards to Hermes instead of a crew |
 | `models.Alert` | `workflows/event-schema.json` | Keep fields; add entity + rule for fingerprint |
 | Traffic / Coupling / COATR agents (role, goal, backstory) | skills `traffic-hermetic`, `coupling`, `coatr` | Move the domain know-how (what to check, in which order, known causes) into the skill. Drop role-play text |
-| Domain tools (`check_traffic`, `check_ratios`, `analyze_logs`, `run_sql`, real versions) | tools in the existing FastMCP server | Expose as MCP tools, read-only, structured output with query + time range. Add names to `tools.include` |
+| Domain tools (`check_traffic`, `check_ratios`, `analyze_logs`, `run_sql`, real versions) | tools in the existing FastMCP server | Map onto the contract domains (pipeline, rules, changes, servers, kafka, monitoring, platform). Read-only, structured output with query + time range. Add names to `tools.include` |
 | `tasks.py` prompts | `alert-investigation` skill | Replaced by the protocol; no "run tools and summarize" prompt |
 | Conclusion agent | removed | The same agent that investigates concludes; contract enforced by `Investigation.validate()` |
 | `policy.should_open_jira` | MCP server Jira tool policy (code) | Enforce in code, not prompt. Map the old rule onto status/priority |
 | `jira/client.py`, `formatter.py`, `publisher.py` | MCP Jira tools (`search_issues`, `add_investigation_comment`, `create_followup_task`) | Reuse client; formatter renders the new contract (headline, location, ruled out, next check) |
 | `memory/fingerprint.py` | `noc-mcp/schemas/fingerprint.py` | Fixed: fingerprint from alert data only |
-| `memory/dedup.py`, `store.py`, `ttl.py` (SQLite) | ingestion dedup + `search_investigations` backend | Keep SQLite at first; pgvector knowledge base later if search needs it |
+| `memory/dedup.py`, `store.py`, `ttl.py` (SQLite) | ingestion dedup + `search_investigations` backend | Move to the org Postgres (dedicated schema); pgvector knowledge base later if search needs it |
 | `main.handle_alert` | Hermes session triggered by ingestion | Verify how a webhook starts a Hermes session (gateway webhook / API) on Nir's version |
 | pgvector Incident KB (planned) | backend of `search_investigations` | After shadow mode, if similarity search proves useful |
 

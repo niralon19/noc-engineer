@@ -5,6 +5,8 @@ description: Domain knowledge for application and database alerts (COATR): error
 
 # Application & DB (COATR)
 
+Use `platform-operations` for cluster-level causes and `pipeline-walk` when the app is one hop of the data path.
+
 ## Candidate locations
 1. Dependency down/slow (DB, upstream API, network to dependency)
 2. Recent deploy or config change

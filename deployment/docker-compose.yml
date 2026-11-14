@@ -1,3 +1,4 @@
+# LOCAL DEV ONLY. Production runs on OpenShift/Rancher via Argo CD (deployment/k8s). Postgres here is a local stand-in for the existing org Postgres (investigation history). No RabbitMQ: the org already has Kafka.
 # LLM/DEVELOPER NOTE: services are OPTIONAL (profile "optional"); not needed for the MVP. Hermes itself is not defined here: ask Nir how Hermes is deployed (official Docker image? existing host?) and verify the HERMES_HOME volume path before adding it.
 services:
   postgres:
@@ -14,14 +15,5 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  rabbitmq:
-    profiles: ["optional"]
-    image: rabbitmq:3.13-management
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-noc_engineer}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD}
-    ports: ["127.0.0.1:5672:5672", "127.0.0.1:15672:15672"]
-    volumes: ["rabbitmq_data:/var/lib/rabbitmq"]
 volumes:
   postgres_data:
-  rabbitmq_data:

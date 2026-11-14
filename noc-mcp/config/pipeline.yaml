@@ -1,0 +1,65 @@
+# Read by OUR code (noc-mcp pipeline tools, anomaly engine, Investigation.validate). Not read by Hermes.
+# The data path from incoming traffic to output. Every hop must expose an IN and OUT count
+# (per rule where possible) so the agent can find the FIRST hop where counts diverge.
+#
+# STATUS: PROPOSED DEFAULT - Nir verifies/edits at work. Replace every TBD. Do not commit
+# hostnames, IPs or internal metric names if the repo is not private.
+verified: false
+hops:
+  - id: ingress_traffic
+    description: Traffic arriving at the monitored servers (switch/port mirror/tap)
+    in_metric: TBD
+    out_metric: TBD
+    per_rule: false
+  - id: server_nic
+    description: Server network interface (rx packets, rx_dropped, ring buffer)
+    in_metric: TBD
+    out_metric: TBD
+    drop_metric: TBD
+    per_rule: false
+  - id: capture_app
+    description: Capture/processing application running on the server
+    in_metric: TBD
+    out_metric: TBD
+    drop_metric: TBD
+    per_rule: TBD
+  - id: kafka_ingest
+    description: Kafka topic(s) the servers produce to
+    in_metric: TBD        # produce rate
+    out_metric: TBD       # consume rate
+    lag_metric: TBD       # consumer group lag
+    per_rule: TBD
+  - id: stream_processing
+    description: Processing services in the Kubernetes cluster (Rancher/OpenShift)
+    in_metric: TBD
+    out_metric: TBD
+    per_rule: TBD
+  - id: internal_enrichment
+    description: Internal organizational enrichment (coupling)
+    in_metric: TBD
+    matched_metric: TBD   # records successfully coupled
+    per_rule: true
+  - id: rule_matching
+    description: Rule evaluation using the rule & configuration management system
+    in_metric: TBD
+    matched_metric: TBD   # hermeticity numerator
+    per_rule: true
+  - id: storage_postgres
+    description: Results/state in Postgres
+    in_metric: TBD
+    per_rule: TBD
+  - id: storage_eck
+    description: Records/logs indexed in ECK (Elasticsearch)
+    in_metric: TBD
+    per_rule: TBD
+  - id: output
+    description: What the customer sees / exported result
+    in_metric: TBD
+    per_rule: true
+kpis:
+  hermeticity:
+    definition: TBD        # e.g. matched / expected traffic for the rule, measured at hop X
+    measured_at: TBD
+  coupling:
+    definition: TBD        # e.g. records coupled with internal enrichment / records eligible
+    measured_at: TBD

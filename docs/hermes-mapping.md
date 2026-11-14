@@ -13,7 +13,9 @@ Verified against the Hermes docs (links below). "Ask Nir" items are not verified
 | `deployment/.env.example` | `.env` | Hermes (secrets) + our code | Secrets only |
 | `noc-mcp/` | MCP server | Hermes connects to it as an MCP server | Tools appear as `mcp_noc_mcp_<tool>` |
 | `noc-mcp/config/tool-contracts.yaml`, `anomaly-engine/config/*`, `deployment/config/*`, `workflows/*.yaml`, `workflows/event-schema.json` | - | **our Python code only** | Not Hermes files |
-| `deployment/docker-compose.yml` | - | Docker | Optional Postgres/RabbitMQ; Hermes itself not defined yet (ask Nir) |
+| `deployment/k8s/`, `deployment/argocd/` | cluster | Argo CD | Hermes Deployment + PVC + profile ConfigMap (skeleton, TBD values) |
+| `noc-mcp/config/pipeline.yaml` | - | our code | Pipeline hops and KPI definitions |
+| `deployment/docker-compose.yml` | - | Docker | Local dev Postgres only |
 
 ## Not yet verified (ask Nir / test)
 - Exact `hermes cron create` flags for no-agent scripts and delivery targets on his version.

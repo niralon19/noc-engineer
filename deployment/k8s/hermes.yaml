@@ -1,0 +1,40 @@
+# Skeleton. VERIFY image, HERMES_HOME path, gateway command and storage with Nir.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: hermes-home}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: {requests: {storage: 10Gi}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: hermes-noc-engineer}
+spec:
+  replicas: 1                      # single gateway: cron must not run twice
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app: hermes-noc-engineer}}
+  template:
+    metadata: {labels: {app: hermes-noc-engineer}}
+    spec:
+      securityContext: {runAsNonRoot: true}
+      initContainers:
+        - name: sync-profile
+          image: TBD-hermes-image
+          command: ["/bin/sh", "-c", "TBD: copy /profile-src into $HERMES_HOME (SOUL.md, skills/, scripts/); remove repo-managed skills that are no longer in the ConfigMap"]
+          env: [{name: HERMES_HOME, value: TBD-path}]
+          volumeMounts:
+            - {name: home, mountPath: TBD-path}
+            - {name: profile-src, mountPath: /profile-src}
+      containers:
+        - name: hermes
+          image: TBD-hermes-image
+          args: ["TBD: gateway start command for profile noc-engineer"]
+          env: [{name: HERMES_HOME, value: TBD-path}]
+          envFrom: [{secretRef: {name: hermes-noc-engineer-env}}]   # created outside git
+          resources:
+            requests: {cpu: 500m, memory: 1Gi}
+            limits: {memory: 2Gi}
+          volumeMounts: [{name: home, mountPath: TBD-path}]
+      volumes:
+        - {name: home, persistentVolumeClaim: {claimName: hermes-home}}
+        - {name: profile-src, configMap: {name: hermes-profile}}

@@ -4,7 +4,7 @@ noc-mcp tools: monitoring.
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 What to implement:
   - query_metrics(query, start, end, step) -> aggregated series via clients/prometheus.py or thanos.py(...)
-  - query_logs(query, start, end, limit) -> via clients/loki.py (or ECK)(...)
+  - query_logs(query, start, end, limit) -> via clients/eck.py (Elasticsearch on ECK; aggregations, bounded)(...)
   - get_alerts(state, labels) -> active/firing Grafana alerts(...)
   - get_metric_history(metric, selector, window) -> downsampled history(...)
   - get_service_health(service) -> combined up/latency/error summary(...)

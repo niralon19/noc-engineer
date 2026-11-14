@@ -3,7 +3,7 @@
 Hermes connects to the **existing internal MCP server**. This repository does not implement a second MCP server. Configure the actual endpoint, transport, authentication and the `tools.include` list in the Hermes profile on the target host.
 
 ## Domains expected
-- Monitoring: Prometheus, Grafana, Thanos, Loki/ECK
+- Monitoring: Prometheus, Grafana, Thanos, ECK
 - Network: DNS, IPAM, RIPE/ASN, routing, firewall (read-only by default)
 - ITSM: Jira issues, tasks, SLA and status
 - Data: quality, enrichment and validation

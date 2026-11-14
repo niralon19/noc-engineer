@@ -1,6 +1,6 @@
 ---
 name: observability-queries
-description: How to query Prometheus/Thanos/Grafana/Loki/ELK correctly and decide whether data is trustworthy. Use whenever you query metrics or logs.
+description: How to query Prometheus/Thanos/Grafana/ECK correctly and decide whether data is trustworthy. Use whenever you query metrics or logs.
 ---
 
 # Observability queries
@@ -13,9 +13,11 @@ description: How to query Prometheus/Thanos/Grafana/Loki/ELK correctly and decid
 ## Query correctly
 - Counters: use `rate()`/`increase()` over a window >= 4x the scrape interval. Never compare raw counters.
 - Use Thanos for windows longer than local retention; Prometheus for the last hours.
+- Hop counts across the pipeline must use the same window and scope; use `get_hop_counts` rather than ad-hoc queries when possible.
 - Always aggregate (`sum by`, `topk`) before returning; never pull thousands of raw series.
 - Compare with a baseline: same window yesterday and last week (`offset 1d`, `offset 7d`).
-- Logs: bound by time and service; look for the FIRST new error signature after onset, not the most frequent one.
+- Logs (ECK/Elasticsearch): bound by time range, index and service; look for the FIRST new error signature after onset, not the most frequent one. Use aggregations, not raw hits.
+- Kafka: use per-partition lag and rates, not only totals.
 
 ## Cite
 Every evidence item: the exact query, time range, and what you observed.

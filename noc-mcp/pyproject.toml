@@ -2,4 +2,4 @@
 name = "noc-mcp"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = []  # TODO: add MCP SDK, httpx, etc.
+dependencies = ["pyyaml"]  # TODO: add MCP SDK (FastMCP), httpx

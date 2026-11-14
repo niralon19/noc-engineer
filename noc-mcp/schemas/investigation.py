@@ -15,16 +15,18 @@ class InvestigationStatus(str, Enum):
 
 
 class Verdict(str, Enum):
-    CONFIRMED = "confirmed"
+    CONFIRMED = "confirmed"      # direct evidence
+    SUPPORTED = "supported"      # evidence points to it, not directly confirmed
     RULED_OUT = "ruled_out"
     UNKNOWN = "unknown"
 
 
 @dataclass
 class Location:
-    layer: Optional[str] = None        # e.g. pipeline, link, provider, routing, app, db
-    component: Optional[str] = None
-    entity: Optional[str] = None       # host / link / customer / prefix
+    hop: Optional[str] = None          # hop id from noc-mcp/config/pipeline.yaml
+    rule_id: Optional[str] = None
+    component: Optional[str] = None    # server / topic / service / enrichment source
+    instances: list[str] = field(default_factory=list)  # affected servers/partitions/pods
     provider: Optional[str] = None
     service: Optional[str] = None
 
@@ -49,7 +51,7 @@ class Candidate:
 @dataclass
 class Investigation:
     investigation_id: str
-    source: str                         # grafana_alert | anomaly | jira | chat
+    source: str                         # grafana_alert | anomaly | jira | chat | config_change
     fingerprint: str                    # from alert data, NEVER from model text
     status: InvestigationStatus
     headline: str                       # "<symptom> caused by <location> since <onset>"
@@ -67,16 +69,27 @@ class Investigation:
     created_at: str = ""
     schema_version: str = "2.0"
 
-    def validate(self) -> list[str]:
-        """Contract checks the agent output must pass before it is published."""
+    def validate(self, known_hops: Optional[set[str]] = None) -> list[str]:
+        """Contract checks the agent output must pass before it is published.
+
+        known_hops: hop ids from pipeline.yaml (see schemas/pipeline.py); when given, the hop must exist.
+        """
         errors = []
         refs = {e.ref for e in self.evidence}
         if self.status in (InvestigationStatus.CONFIRMED, InvestigationStatus.HIGH_CONFIDENCE):
             if not self.suspected_location:
                 errors.append("suspected_location required")
-            confirmed = [c for c in self.candidates if c.verdict == Verdict.CONFIRMED]
-            if not confirmed or not any(r in refs for c in confirmed for r in c.evidence_for):
-                errors.append("confirmed candidate must cite existing evidence")
+            elif not self.suspected_location.hop:
+                errors.append("suspected_location.hop required")
+            needed = {Verdict.CONFIRMED} if self.status == InvestigationStatus.CONFIRMED \
+                else {Verdict.CONFIRMED, Verdict.SUPPORTED}
+            backing = [c for c in self.candidates if c.verdict in needed]
+            if not backing or not any(r in refs for c in backing for r in c.evidence_for):
+                errors.append("leading candidate must cite existing evidence")
+        if known_hops is not None:
+            for loc in [self.suspected_location] + [c.location for c in self.candidates]:
+                if loc and loc.hop and loc.hop not in known_hops:
+                    errors.append(f"unknown hop: {loc.hop}")
         if self.status == InvestigationStatus.CONFIRMED and not self.ruled_out:
             errors.append("CONFIRMED requires ruled_out alternatives")
         if self.status != InvestigationStatus.CONFIRMED and not self.next_check:

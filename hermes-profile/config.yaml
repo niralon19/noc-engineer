@@ -21,15 +21,24 @@ mcp_servers:
     tools:
       # tools.include is the client-side allowlist (include wins over exclude).
       # Use ORIGINAL MCP tool names (Hermes registers them as mcp_noc_mcp_<tool>).
-      # Day-1 set: 8 read-only tools + Jira comment. Replace with names discovered via `hermes mcp test noc_mcp`.
       include:
-        - query_metrics
-        - get_alerts
-        - query_logs
+        # Day-1 set for change-correlation + pipeline-walk + Jira. Replace with discovered names.
+        - get_pipeline_map
+        - get_hop_counts
+        - get_rule
+        - get_rule_path
+        - get_rule_changes
+        - get_rule_kpis
+        - get_argo_sync_history
         - get_deployment_history
+        - get_maintenance_windows
+        - get_server_drops
+        - get_consumer_lag
+        - query_metrics
+        - query_logs
         - search_investigations
-        - get_issue
         - search_issues
+        - get_issue
         - add_investigation_comment
       resources: false
       prompts: false

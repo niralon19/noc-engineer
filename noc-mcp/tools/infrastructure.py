@@ -1,5 +1,5 @@
 """
-noc-mcp tools: infrastructure.
+noc-mcp tools: infrastructure (Kubernetes: Rancher + OpenShift; Postgres; ECK health).
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 What to implement:

@@ -1,0 +1,17 @@
+# Argo CD Application for the Hermes NOC engineer. VERIFY project, repo URL (internal mirror), cluster and namespace.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hermes-noc-engineer
+  namespace: argocd
+spec:
+  project: TBD
+  source:
+    repoURL: TBD-internal-git-url
+    targetRevision: main
+    path: deployment/k8s
+  destination:
+    server: TBD-cluster-api
+    namespace: TBD-noc-engineer
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}

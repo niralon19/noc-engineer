@@ -1,26 +1,25 @@
 ---
 name: traffic-hermetic
-description: Domain knowledge for traffic integrity / hermeticity alerts: traffic volume, drops, imbalance between paths or providers.
+description: Rule hermeticity problems: a rule does not capture all the traffic it should (or captures traffic it should not).
 ---
 
-# Traffic & hermeticity
+# Hermeticity
 
-## Candidate locations (check in this order)
-1. Measurement/pipeline: is the data itself complete and fresh? (collector, exporter, missing series)
-2. Single link/interface or provider path
-3. Provider / upstream (several links of the same provider)
-4. Routing change (prefix moved to another path)
-5. Source side: customer or service actually sent less traffic
-6. Enrichment: provider/ASN/country attribution changed, not the traffic (load `enrichment-quality`)
+Hermeticity = the rule captures all and only the traffic it is meant to capture. Most often the cause is upstream loss or a change.
+
+## Candidate locations
+1. Rule or configuration change (`change-correlation`): definition, scope, overlapping/conflicting rule, global config
+2. Data loss on the path (`pipeline-walk`): servers, NIC, capture app, Kafka, processing
+3. Traffic itself changed: the customer's traffic moved (new IPs/prefixes, provider, path)
+4. Enrichment attribution changed so the rule no longer matches (`enrichment-quality`)
+5. Measurement: the hermeticity KPI pipeline itself is stale or incomplete (`observability-queries`)
 
 ## Decisive checks
-- Compare the affected entity with its peers in the same window.
-- Compare in vs out and path A vs path B; hermeticity breaks show as an imbalance.
-- Overlay the onset time with routing/config changes.
+- Expected vs matched traffic for the rule, split by server and by sub-scope (prefix, provider).
+- If expected traffic also dropped, it is upstream, not the rule.
+- If expected is stable and matched dropped at a rule change time, it is the rule/config.
+- Compare with other rules on the same servers: all affected = path; one rule = rule/config/traffic.
 
 ## Environment knowledge
 <!-- Filled from the team's real procedures. Do not invent. -->
-- Metrics and their meaning: TBD
-- Normal ranges / known seasonality: TBD
-- Known recurring causes: TBD
-- Owners / escalation: TBD
+- TBD

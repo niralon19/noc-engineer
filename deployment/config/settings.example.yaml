@@ -5,13 +5,12 @@ mcp:
   config_file: ${HERMES_CONFIG_PATH}
   discovery_required: true
   tool_contracts: ../../noc-mcp/config/tool-contracts.yaml
-messaging:
-  url: ${RABBITMQ_URL}
-  exchange: noc.events
-  queue: hermes.investigations
-  dead_letter_exchange: noc.dlx
+messaging:            # existing org Kafka (no RabbitMQ)
+  bootstrap: ${KAFKA_BOOTSTRAP}
+  topic_events: TBD-noc-events
+  topic_dlq: TBD-noc-events-dlq
 storage:
-  postgres_dsn: ${DATABASE_URL}
+  postgres_dsn: ${HISTORY_DATABASE_URL}   # existing org Postgres, dedicated schema
   retention_days: ${NOC_RETENTION_DAYS}
   timezone: ${NOC_TIMEZONE}
 security:

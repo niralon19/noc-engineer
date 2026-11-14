@@ -1,0 +1,14 @@
+# VERIFY all TBD values with Nir before use.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: TBD-noc-engineer
+resources:
+  - hermes.yaml
+configMapGenerator:
+  - name: hermes-profile
+    files:
+      - SOUL.md=../../hermes-profile/SOUL.md
+      # Kustomize cannot glob directories: list each skill and script, or generate this list in CI.
+      # TODO: generate from hermes-profile/skills/*/SKILL.md (one key per skill: skills__<name>__SKILL.md)
+generatorOptions:
+  disableNameSuffixHash: false

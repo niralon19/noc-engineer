@@ -2,33 +2,40 @@
 
 Single Hermes agent (profile `noc-engineer`) that replaces the CrewAI pipeline (`crew-network`). Model: Kimi K3 via an OpenAI-compatible endpoint. Read-only by default.
 
+## How it thinks
+Every customer problem surfaces as a **rule's hermeticity or coupling** degrading, but the cause can be any hop of a long path (servers -> NIC -> capture app -> Kafka -> K8s processing -> internal enrichment -> rule matching -> Postgres/ECK -> output), a change (rule/config, Argo, rollout), maintenance, loss or load. Each investigation: **what changed -> walk the path to the first diverging hop -> test candidates there -> rule out**. The hops are defined in `noc-mcp/config/pipeline.yaml` / `docs/pipeline-map.md` (filled at work).
+
 ## Routes
 | Route | Entry | Skills |
 |---|---|---|
-| New alert | Grafana webhook (existing router + dedup forwards to Hermes) | `alert-investigation` + domain |
-| Customer/team Jira ticket | Jira webhook + polling | `customer-ticket` + domain |
+| New alert | Grafana webhook (existing router + dedup forwards to Hermes) | `alert-investigation` |
+| Customer/team Jira ticket | Jira webhook + polling | `customer-ticket` |
+| Rule/config change request | Jira / chat | `config-change` (review before, verify after) |
 | Team question | Web chat / Slack | `user-question` |
-| Early detection | cron `proactive-review` (anomaly engine script -> agent) | `proactive-review` |
+| Early detection | cron `proactive-review` (rule-centric anomaly script -> agent) | `proactive-review` |
 | On-call morning report | cron `oncall-report` 07:00 | `oncall-report` |
 
-Domain skills: `traffic-hermetic`, `coupling`, `coatr`. Supporting skills: `observability-queries`, `network-engineering`, `openshift-operations`, `jira-operations`, `enrichment-quality`. Every investigation must locate the problem (`suspected_location`, `onset_time`, `ruled_out`, `next_check`); see `noc-mcp/schemas/investigation.py`.
+Domain skills: `traffic-hermetic` (hermeticity), `coupling`, `coatr` (app/DB).
+Supporting skills: `change-correlation`, `pipeline-walk`, `capture-servers`, `kafka-pipeline`, `platform-operations` (Rancher, OpenShift, Argo, Postgres, ECK), `network-engineering`, `enrichment-quality`, `observability-queries`, `jira-operations`.
+Every investigation must locate the problem (`suspected_location.hop`, `rule_id`, `onset_time`, `ruled_out`, `next_check`) and pass `Investigation.validate()`.
 
 ## Architecture
-- **Hermes = brain**, **Skills = methodology**, **MCP = tool access**. One agent, seven skills, one MCP layer. No multi-agent, no CrewAI as a permanent layer.
-- The Python anomaly engine does deterministic/statistical detection outside the LLM path and emits normalized events. Hermes does correlation, explanation and RCA.
-- Jira enters via webhook plus bounded polling. Web chat is primary; Slack is for notifications.
-- PostgreSQL/RabbitMQ are **optional** (`--profile optional`) and not needed to start.
+- **Hermes = brain**, **Skills = methodology**, **MCP = tool access**. One agent, one MCP layer (Nir's FastMCP server). No multi-agent, no CrewAI as a permanent layer.
+- The Python anomaly engine is rule-centric (hermeticity/coupling per rule vs baseline, hop divergence) and deterministic. Hermes correlates and explains.
+- Uses existing infrastructure: Kafka for events, org Postgres for investigation history. No RabbitMQ.
+- Production deploy: OpenShift/Rancher via Argo CD (`deployment/k8s`, `deployment/argocd`). `docker-compose.yml` is local dev only.
+- Hebrew guide to every folder and file: `docs/מדריך-הפרויקט.md`.
 
 ## Repository map
 | Path | Purpose |
 |---|---|
 | `hermes-profile/` | Version-controlled mirror of `HERMES_HOME`: `SOUL.md`, `config.yaml` fragment, `skills/<name>/SKILL.md`, `scripts/` (no-agent cron) |
-| `noc-mcp/` | MCP server code, tool contract (`config/`), result schemas |
+| `noc-mcp/` | MCP tool contract + pipeline map (`config/`), tool/client stubs, investigation schema and fingerprint |
 | `anomaly-engine/` | Deterministic detection (`anomaly_engine.py`, rules, baselines) |
 | `event-ingestion/` | Grafana/Jira webhooks and polling (reuse the existing Grafana→Jira agent) |
 | `reporting/` | Daily NOC report |
 | `workflows/` | Design specs for our Python code (NOT read by Hermes) + event schema |
-| `deployment/` | `sync-profile.sh`, `cron/install-cron.sh` + prompts, `.env.example`, compose, optional Postgres schema |
+| `deployment/` | `k8s/` + `argocd/` (production), `sync-profile.sh`, `cron/install-cron.sh` + prompts, `.env.example`, local compose |
 | `docs/` | Architecture, tools contract, investigation flow, security, runbooks |
 | `tests/` | Architecture contracts and anomaly-engine tests (`pytest tests`) |
 
@@ -55,10 +62,10 @@ Change live settings with `hermes config set`; do not overwrite the live `config
 4. `proactive-review` + `oncall-report`.
 5. Hardening (permissions, failure tests, idempotency). See `docs/migration-from-crewai.md`.
 
-## Optional services
+## Local dev
 ```bash
-cp deployment/.env.example deployment/.env   # replace all passwords
-docker compose -f deployment/docker-compose.yml --profile optional up -d
+cp deployment/.env.example deployment/.env
+docker compose -f deployment/docker-compose.yml --profile optional up -d   # local Postgres only
 ```
 
 ## Status
