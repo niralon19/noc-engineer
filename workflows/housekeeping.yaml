@@ -1,0 +1,2 @@
+name: housekeeping
+steps: [expire_idempotency_records_by_policy, archive_closed_incidents, prune_expired_transient_events, vacuum_analyze_when_safe, verify_backup_status]

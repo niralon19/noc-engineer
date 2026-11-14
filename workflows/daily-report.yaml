@@ -1,0 +1,12 @@
+name: noc-daily-report
+version: 1
+schedule_ref: cron/noc-daily-report.yaml
+sections:
+  - critical_and_warning_incidents
+  - new_anomalies_and_trends
+  - service_health_and_slo_risks
+  - network_findings
+  - open_jira_tasks_and_sla_risks
+  - data_quality_and_enrichment
+  - unresolved_investigations_and_recommendations
+outputs: [postgresql, slack, hermes_session]

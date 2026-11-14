@@ -1,0 +1,21 @@
+name: incident-lifecycle
+version: 1
+trigger: [anomaly_event, jira_webhook, jira_poll]
+steps:
+  - id: receive
+    action: validate_and_deduplicate
+  - id: classify
+    action: classify_severity_and_domain
+  - id: investigate
+    agent: noc-engineer
+    action: gather_metrics_logs_network_and_change_evidence
+  - id: assess
+    action: produce_rca_with_confidence_and_gaps
+  - id: coordinate
+    action: create_or_update_jira_if_policy_allows
+    approval_required: true
+  - id: verify
+    action: monitor_recovery_window
+  - id: close
+    action: persist_findings_and_notify
+failure_policy: retry_then_dead_letter

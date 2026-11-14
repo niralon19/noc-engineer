@@ -1,0 +1,3 @@
+name: anomaly-baseline
+steps: [load_curated_metric_windows, validate_sample_coverage, compute_robust_baselines, version_baseline, persist_baseline]
+constraints: [bounded_queries, no_per_series_polling, no_llm_per_metric]

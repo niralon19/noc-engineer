@@ -1,0 +1,12 @@
+name: anomaly-investigation
+version: 1
+trigger: anomaly.detected
+steps:
+  - validate_event_schema
+  - enrich_entity_and_service_context
+  - correlate_related_events
+  - request_hermes_investigation
+  - persist_evidence_and_findings
+  - notify_on_severity_threshold
+  - create_jira_task_if_approved
+idempotency_key: event_id

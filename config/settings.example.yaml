@@ -1,0 +1,19 @@
+environment: on-prem
+agent: noc-engineer
+mcp:
+  config_file: ${HERMES_CONFIG_PATH}
+  discovery_required: true
+  tool_contracts: ../mcp/tool-contracts.yaml
+messaging:
+  url: ${RABBITMQ_URL}
+  exchange: noc.events
+  queue: hermes.investigations
+  dead_letter_exchange: noc.dlx
+storage:
+  postgres_dsn: ${DATABASE_URL}
+  retention_days: ${NOC_RETENTION_DAYS}
+  timezone: ${NOC_TIMEZONE}
+security:
+  default_mode: read_only
+  require_approval_for_mutations: true
+  audit_all_tool_calls: true

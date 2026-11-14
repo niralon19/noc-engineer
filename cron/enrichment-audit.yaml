@@ -1,0 +1,6 @@
+name: enrichment-audit
+schedule: '*/30 * * * *'
+timezone: ${NOC_TIMEZONE}
+handler: workflows/enrichment-audit.yaml
+max_runtime_seconds: 300
+concurrency: forbid

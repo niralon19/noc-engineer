@@ -1,0 +1,4 @@
+# Populate only with exact tool names discovered from the internal MCP server.
+read_only: []
+write_requires_approval: []
+deny_by_default: true

@@ -1,0 +1,6 @@
+name: jira-polling-backup
+schedule: '*/2 * * * *'
+timezone: ${NOC_TIMEZONE}
+handler: workflows/jira-intake.yaml
+max_runtime_seconds: 90
+concurrency: forbid

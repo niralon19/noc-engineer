@@ -1,0 +1,11 @@
+version: 1
+rules:
+  - rule_id: service-latency-high
+    metric: REPLACE_WITH_VERIFIED_METRIC
+    selector: REPLACE_WITH_APPROVED_SELECTOR
+    operator: gt
+    threshold: 0
+    severity: warning
+    for_seconds: 300
+    enabled: false
+# Do not enable until metric name, units, labels, threshold and owner are verified.

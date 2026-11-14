@@ -1,0 +1,18 @@
+name: noc-engineer
+role: Autonomous NOC Engineer
+skills:
+  - 01_sre-observability
+  - 02_network-engineering
+  - 03_incident-investigation
+  - 04_devops-operations
+  - 05_itsm-coordination
+  - 06_data-quality-integrity
+  - 07_data-enrichment-quality
+mcp: noc-mcp
+memory: postgres
+channels: [web, slack]
+autonomy: recommend
+policies:
+  production_changes: approval_required
+  default_access: read_only
+  audit: required

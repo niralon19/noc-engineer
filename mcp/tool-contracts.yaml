@@ -1,0 +1,18 @@
+version: 1
+mode: discovery_required
+server: existing-internal-mcp
+policy:
+  default: read_only
+  write_requires_approval: true
+  reject_unknown_tools: true
+domains:
+  monitoring:
+    expected_capabilities: [query_metrics, get_alerts, query_logs]
+    backends: [prometheus, grafana, thanos, loki, eck]
+  network:
+    expected_capabilities: [dns_lookup, ip_lookup, asn_lookup, route_inspect, firewall_inspect]
+  itsm:
+    expected_capabilities: [jira_search, jira_get_issue, jira_create_issue, jira_update_issue]
+  data:
+    expected_capabilities: [quality_check, enrichment_lookup, validate_records]
+# Replace capability labels with actual discovered MCP tool names and JSON schemas.

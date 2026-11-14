@@ -1,0 +1,6 @@
+name: anomaly-baseline
+schedule: '0 * * * *'
+timezone: ${NOC_TIMEZONE}
+handler: workflows/anomaly-baseline.yaml
+max_runtime_seconds: 900
+concurrency: forbid

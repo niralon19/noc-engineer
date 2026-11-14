@@ -1,0 +1,6 @@
+name: noc-daily-report
+schedule: '0 7 * * *'
+timezone: ${NOC_TIMEZONE}
+handler: workflows/daily-report.yaml
+max_runtime_seconds: 1800
+concurrency: forbid

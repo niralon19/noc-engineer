@@ -1,0 +1,6 @@
+name: housekeeping
+schedule: '0 2 * * *'
+timezone: ${NOC_TIMEZONE}
+handler: workflows/housekeeping.yaml
+max_runtime_seconds: 1800
+concurrency: forbid
