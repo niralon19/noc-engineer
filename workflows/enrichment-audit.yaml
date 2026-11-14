@@ -1,2 +1,3 @@
+# DESIGN SPEC for our Python code - NOT read by Hermes. Hermes-native equivalents: skills (hermes-profile/skills), cron (deployment/cron), MCP tools.
 name: enrichment-audit
 steps: [sample_enrichment_records, validate_cidr_and_asn, check_provider_provenance, measure_coverage_and_freshness, persist_audit, alert_on_regression]

@@ -16,7 +16,7 @@ Rules for every tool in noc-mcp (see docs/tools-contract.md):
   - Every outbound call has a timeout and bounded result size (aggregate or paginate; the environment has ~100K series, never one request per series).
   - Read-only unless the module says otherwise. Writes require a permission check (security/) and an audit record.
   - No arbitrary command execution on production hosts, ever.
-  - Tool names must match noc-mcp/config/tool-contracts.yaml; if you rename one, update the contract and allowlist too.
+  - Tool names must match noc-mcp/config/tool-contracts.yaml; if you rename one, update tool-contracts.yaml and tools.include in hermes-profile/config.yaml too.
 
 Distinguish observed state from configured policy. Support IPv4 and IPv6. Never change firewall/routing state.
 

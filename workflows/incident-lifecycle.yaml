@@ -1,3 +1,4 @@
+# DESIGN SPEC for our Python code - NOT read by Hermes. Hermes-native equivalents: skills (hermes-profile/skills), cron (deployment/cron), MCP tools.
 name: incident-lifecycle
 version: 1
 trigger: [anomaly_event, jira_webhook, jira_poll]

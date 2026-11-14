@@ -29,5 +29,21 @@ def test_skill_frontmatter_name_matches_directory():
         assert head[0] == "---" and f"name: {s}" in head[:4], s
 
 
-def test_six_scheduled_jobs_exist():
-    assert CRON.issubset({p.name for p in (ROOT / "deployment" / "cron").glob("*.yaml")})
+def test_six_cron_jobs_defined_via_hermes_cli_script():
+    script = (ROOT / "deployment" / "cron" / "install-cron.sh").read_text()
+    for name in ["data-quality-scan", "enrichment-audit", "anomaly-baseline",
+                 "jira-polling-backup", "housekeeping", "noc-daily-report"]:
+        assert name in script, name
+    assert "hermes\" cron create" in script or '"$HERMES" cron create' in script
+    assert not list((ROOT / "deployment" / "cron").glob("*.yaml"))  # Hermes does not read cron YAML
+
+
+def test_noscript_scripts_and_prompt_exist():
+    for s in ["data_quality_scan", "enrichment_audit", "anomaly_baseline", "jira_poll", "housekeeping"]:
+        assert (ROOT / "hermes-profile" / "scripts" / f"{s}.py").exists(), s
+    assert (ROOT / "deployment" / "cron" / "prompts" / "noc-daily-report.md").exists()
+
+
+def test_mcp_config_uses_hermes_shape():
+    text = (ROOT / "hermes-profile" / "config.yaml").read_text()
+    assert "mcp_servers:" in text and "tools:" in text and "include:" in text

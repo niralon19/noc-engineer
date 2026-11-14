@@ -1,3 +1,4 @@
+# Read by OUR noc-mcp startup validation (not Hermes). Tool names are a proposed contract until verified with `hermes mcp test noc_mcp`.
 version: 1
 mode: discovery_required
 server: existing-internal-mcp

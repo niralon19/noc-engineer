@@ -1,2 +1,3 @@
+# DESIGN SPEC for our Python code - NOT read by Hermes. Hermes-native equivalents: skills (hermes-profile/skills), cron (deployment/cron), MCP tools.
 name: housekeeping
 steps: [expire_idempotency_records_by_policy, archive_closed_incidents, prune_expired_transient_events, vacuum_analyze_when_safe, verify_backup_status]

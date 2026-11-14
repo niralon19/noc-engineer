@@ -1,3 +1,4 @@
+# DESIGN SPEC for our Python code - NOT read by Hermes. Hermes-native equivalents: skills (hermes-profile/skills), cron (deployment/cron), MCP tools.
 name: anomaly-baseline
 steps: [load_curated_metric_windows, validate_sample_coverage, compute_robust_baselines, version_baseline, persist_baseline]
 constraints: [bounded_queries, no_per_series_polling, no_llm_per_metric]

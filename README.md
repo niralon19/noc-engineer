@@ -11,21 +11,30 @@ Single primary Hermes agent (profile `noc-engineer`) for on-prem NOC investigati
 ## Repository map
 | Path | Purpose |
 |---|---|
-| `hermes-profile/` | Version-controlled mirror of `HERMES_HOME`: `SOUL.md`, `config.yaml`, `skills/<name>/SKILL.md` |
-| `noc-mcp/` | MCP server code, tool contracts and allowlist (`config/`), result schemas |
+| `hermes-profile/` | Version-controlled mirror of `HERMES_HOME`: `SOUL.md`, `config.yaml` fragment, `skills/<name>/SKILL.md`, `scripts/` (no-agent cron) |
+| `noc-mcp/` | MCP server code, tool contract (`config/`), result schemas |
 | `anomaly-engine/` | Deterministic detection (`anomaly_engine.py`, rules, baselines) |
 | `event-ingestion/` | Grafana/Jira webhooks and polling (reuse the existing Grafana→Jira agent) |
 | `reporting/` | Daily NOC report |
-| `workflows/` | Declarative specs: incident lifecycle, Jira intake, event schema |
-| `deployment/` | Compose, `.env.example`, cron job specs, example settings, optional Postgres schema |
+| `workflows/` | Design specs for our Python code (NOT read by Hermes) + event schema |
+| `deployment/` | `sync-profile.sh`, `cron/install-cron.sh` + prompts, `.env.example`, compose, optional Postgres schema |
 | `docs/` | Architecture, tools contract, investigation flow, security, runbooks |
 | `tests/` | Architecture contracts and anomaly-engine tests (`pytest tests`) |
 
+## Hermes-native vs ours
+Hermes reads only: `SOUL.md`, `skills/`, `config.yaml` (MCP block), `scripts/` and cron jobs created through its CLI. Everything else in the repo is our own code or design spec. Full table: `docs/hermes-mapping.md`.
+
 ## Deploying the profile
-`hermes-profile/` is the source of truth; sync its contents into the real `HERMES_HOME` (usually `~/.hermes/profiles/noc-engineer/`) with a script. Do not use a bare symlink (Hermes may silently fall back to the default profile). Change settings with `hermes config set`, not by hand-editing `config.yaml` on the live host. Verify the path in your Docker image.
+```bash
+deployment/sync-profile.sh          # copies SOUL.md, skills/, scripts/ (never a symlink)
+# merge mcp_servers from hermes-profile/config.yaml, then:
+hermes config check && hermes mcp test noc_mcp
+deployment/cron/install-cron.sh     # creates the 6 jobs via `hermes cron create`
+```
+Change live settings with `hermes config set`; do not overwrite the live `config.yaml`.
 
 ## Cron
-Job specs live in `deployment/cron/` (data-quality `*/15`, enrichment `*/30`, baseline `0 *`, Jira polling `*/2`, daily report `0 7`, housekeeping `0 2`; timezone `Asia/Jerusalem`). They are specs, not enabled schedules. Register each in exactly one scheduler. Deterministic checks run as plain Python, not through the LLM.
+Six jobs (data-quality `*/15`, enrichment `*/30`, baseline `0 *`, Jira polling `*/2`, daily report `0 7`, housekeeping `0 2`). Deterministic ones run as **no-agent scripts** (no LLM); only the daily report uses the agent. Details: `deployment/cron/README.md`.
 
 ## Start order
 0. **Day 0:** test the local LLM on a synthetic multi-step tool-calling investigation. If it fails, nothing else matters.

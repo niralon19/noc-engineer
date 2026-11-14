@@ -1,6 +1,0 @@
-name: data-quality-scan
-schedule: '*/15 * * * *'
-timezone: ${NOC_TIMEZONE}
-handler: workflows/data-quality-scan.yaml
-max_runtime_seconds: 300
-concurrency: forbid

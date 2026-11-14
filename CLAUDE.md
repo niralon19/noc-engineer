@@ -28,6 +28,9 @@ If a fact is missing, ASK before coding. Never invent: MCP tool names/schemas, H
 4. Anomaly engine, data quality, enrichment.
 5. Cron + daily report. 6. Hardening.
 
+## What Hermes actually reads (see docs/hermes-mapping.md)
+`SOUL.md`, `skills/`, `config.yaml` (`mcp_servers`), `scripts/` and cron jobs created via `hermes cron create` (stored in `cron/jobs.json`; never hand-edit). Cron is NOT YAML. The allowlist for MCP tools is `tools.include` in config.yaml. Everything under `workflows/`, `anomaly-engine/config/`, `deployment/config/` and `noc-mcp/config/tool-contracts.yaml` is read by our own code only. When unsure about a Hermes feature, check the docs or ask Nir; do not invent keys or flags.
+
 ## Conventions
 - `hermes-profile/` mirrors `HERMES_HOME`. `SOUL.md` and `SKILL.md` are loaded into the model prompt: never put developer notes in them (use `hermes-profile/AUTHORING.md`).
 - Change live Hermes config with `hermes config set`; deploy by sync script, not a bare symlink.

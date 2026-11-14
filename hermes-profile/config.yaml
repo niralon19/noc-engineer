@@ -1,9 +1,35 @@
-# LLM/DEVELOPER NOTE: mirror of the live Hermes profile config. Do NOT guess keys:
-# verify against the installed Hermes version (`hermes config check`, docs: hermes-agent.nousresearch.com/docs).
-# Ask Nir: Hermes version, model/provider (local LLM endpoint), MCP transport and URL.
-# Secrets go to .env (never here).
+# Hermes-native config fragment for profile `noc-engineer`.
+# Lives at $HERMES_HOME/config.yaml (usually ~/.hermes/profiles/noc-engineer/config.yaml).
+# Do NOT overwrite the live file with this one: merge the mcp_servers block with
+# `hermes mcp add` or by hand, then `hermes config check`, `hermes mcp test noc_mcp`,
+# and `/reload-mcp` in a running session. Secrets go to .env, never here.
+# Schema source: https://hermes-agent.nousresearch.com/docs/reference/mcp-config-reference
+#
+# LLM/DEVELOPER: ask Nir before changing: Hermes version, local LLM endpoint,
+# MCP transport (stdio command vs HTTP url) and whether an internal MCP server already exists.
 mcp_servers:
-  noc-mcp:
-    # TODO: transport/command or url for the MCP server
-    # TODO: tool allow-list (start ~8 read-only tools + jira comment/create)
-    {}
+  noc_mcp:                      # underscores: Hermes rewrites '-' and '.' in server/tool names
+    # --- choose ONE transport (the keys do not mix) ---
+    command: "python"           # stdio: Hermes spawns the process
+    args: ["-m", "noc_mcp.server"]   # TODO verify entry point once noc-mcp/server.py exists
+    env: {}                     # non-secret env only
+    # url: "https://REPLACE-internal-mcp-host/mcp"   # HTTP alternative
+    # headers: {}               # auth header via .env interpolation
+    enabled: true
+    timeout: 120
+    connect_timeout: 60
+    tools:
+      # tools.include is the client-side allowlist (include wins over exclude).
+      # Use ORIGINAL MCP tool names (Hermes registers them as mcp_noc_mcp_<tool>).
+      # Day-1 set: 8 read-only tools + Jira comment. Replace with names discovered via `hermes mcp test noc_mcp`.
+      include:
+        - query_metrics
+        - get_alerts
+        - get_metric_history
+        - compare_baseline
+        - search_investigations
+        - get_issue
+        - search_issues
+        - add_investigation_comment
+      resources: false
+      prompts: false
