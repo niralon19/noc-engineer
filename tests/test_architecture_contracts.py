@@ -181,3 +181,45 @@ def test_claude_md_has_ask_protocol_and_soul_asks():
     claude = (ROOT / "CLAUDE.md").read_text()
     assert "scripts/open_items.py" in claude and "Never invent" in claude
     assert "## When information is missing" in (ROOT / "hermes-profile" / "SOUL.md").read_text()
+
+
+def test_every_skeleton_file_is_registered_tagged_and_mapped():
+    import re
+    import yaml
+    fm = yaml.safe_load((ROOT / "docs" / "skeleton-files.yaml").read_text())["files"]
+    qtext = (ROOT / "docs" / "OPEN-QUESTIONS.md").read_text()
+    known = set(re.findall(r"^\|\s*([A-Z]\d+)\s*\|", qtext, re.M))
+    for path, ids in fm.items():
+        assert (ROOT / path).exists(), path
+        assert set(ids) <= known, (path, set(ids) - known)
+        text = (ROOT / path).read_text()
+        if ids and not path.endswith("SKILL.md"):
+            m = re.search(r"REQUIRES FROM NIR: ([A-Z0-9, ]+)", text)
+            assert m and {x.strip() for x in m.group(1).split(",")} == set(ids), path
+        if path.endswith("SKILL.md"):
+            assert "REQUIRES FROM NIR" not in text, path      # skills are model prompts
+    stubs = []
+    for p in ROOT.rglob("*"):
+        rel = p.relative_to(ROOT).as_posix()
+        if not p.is_file() or rel.startswith((".git/", "tests/", "scripts/")) or p.suffix not in (".py", ".md", ".yaml", ".sh", ".tsx"):
+            continue
+        t = p.read_text(errors="ignore")
+        if "raise NotImplementedError" in t or "What to implement" in t or re.search(r"\bTBD\b", t):
+            stubs.append(rel)
+    allowed_docs = {"README.md", "noc-mcp/README.md", "CLAUDE.md", "AGENTS.md", "docs/OPEN-QUESTIONS.md", "docs/STATUS.md",
+                    "docs/מדריך-הפרויקט.md", "docs/hermes-mapping.md", "docs/migration-from-crewai.md", "docs/tools-contract.md",
+                    "docs/decisions.md", "docs/skeleton-files.yaml", "deployment/k8s/README.md", "deployment/k8s/gen_kustomization.py",
+                    "deployment/cron/README.md", "deployment/docker-compose.yml", "deployment/day0-check.sh", "deployment/sync-profile.sh",
+                    "hermes-profile/AUTHORING.md", "noc-mcp/schemas/common.py", "noc-mcp/schemas/pipeline.py", "noc-mcp/tools/pipeline.py",
+                    "noc-mcp/tools/rules.py", "noc-mcp/tools/servers.py", "noc-mcp/tools/kafka.py", "noc-mcp/config/README.md",
+                    "noc-mcp/tests/README.md", "noc-mcp/security/README.md", "workflows/README.md", "docs/project-map.he.md",
+                    "docs/מה-זה-הרמס.md"}
+    unregistered = [s for s in stubs if s not in fm and s not in allowed_docs and not s.startswith("workflows/")]
+    assert not unregistered, unregistered
+
+
+def test_file_mode_blocks_and_exits_nonzero():
+    import subprocess
+    r = subprocess.run(["python3", str(ROOT / "scripts" / "open_items.py"), "--file", "anomaly-engine/detection.py"],
+                       capture_output=True, text=True)
+    assert r.returncode == 1 and "BLOCKED" in r.stdout and "[K1]" in r.stdout

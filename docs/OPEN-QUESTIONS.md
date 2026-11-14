@@ -86,3 +86,44 @@
 | J1 | 20–30 התראות או תקלות שנפתרו עם הגורם הידוע (תחנה, חוק, instance). מצונזר | מדידה מול CrewAI | `evals/cases/` (כשייבנה) | — | ❓ |
 | J2 | כרטיס Jira אחד שבו המסקנה של CrewAI הייתה מעורפלת (מצונזר) | מקרה בדיקה ראשון | `evals/cases/` | — | ❓ |
 | J3 | איך ההתראה מגיעה היום ל-CrewAI (פורמט ה-webhook מ-Grafana, איפה ה-router)? | bridge ל-Hermes | `event-ingestion/grafana_webhook.py`, `docs/migration-from-crewai.md` | — | ❓ |
+
+## K. זיהוי מוקדם (anomaly engine)
+| ID | שאלה | למה צריך | איפה נשמרת התשובה | דוגמה / ברירת מחדל | מצב |
+|---|---|---|---|---|---|
+| K1 | אילו חוקים ואותות לנטר ביוזמה? (כל החוקים, רשימה או לקוחות מסוימים) | היקף הסריקה | `anomaly-engine/config/detection-rules.yaml` | כל החוקים לפי הרמטיות וצימוד | ❓ |
+| K2 | מאיזו ירידה מול ה-baseline זה ממצא (באחוזים או בסטיות תקן)? כמה ממצאים ביום סביר לצוות? | ספים ורעש | `detection-rules.yaml` | ירידה של 10% לאורך 15 דקות, עד 10 ביום | ❓ |
+| K3 | יש עונתיות (שעות, ימים, חגים) או תקופות ידועות כרועשות? | baseline נכון | `anomaly-engine/config`, skill `proactive-review` | השוואה ליום ולשבוע קודמים | ❓ |
+
+## L. קליטת אירועים (event-ingestion)
+| ID | שאלה | למה צריך | איפה נשמרת התשובה | דוגמה / ברירת מחדל | מצב |
+|---|---|---|---|---|---|
+| L1 | דוגמת payload אחת (מצונזרת) של webhook מ-Grafana, ואיך הוא מאומת (token או header)? | נרמול ואימות | `event-ingestion/grafana_webhook.py`, `workflows/event-schema.json` | — | ❓ |
+| L2 | איך מפעילים חקירה ב-Hermes מבחוץ: `/v1/runs`, `/v1/chat/completions` או webhook של ה-gateway? (לפי הגרסה) | ה-bridge | `event-ingestion/grafana_webhook.py` | `/v1/runs` | ❓ |
+| L3 | יש webhook מ-Jira? מי ה-admin? אילו אירועים (created/updated)? | מסלול תקלות לקוח | `event-ingestion/jira_webhook.py` | polling בלבד בהתחלה | ❓ |
+| L4 | איפה ה-dedup של CrewAI היום (SQLite) ומה ה-TTL? | העברה ל-Postgres | `event-ingestion/*`, `history.py` | TTL של 6 שעות | ❓ |
+
+## M. סקריפטים מתוזמנים
+| ID | שאלה | למה צריך | איפה נשמרת התשובה | דוגמה / ברירת מחדל | מצב |
+|---|---|---|---|---|---|
+| M1 | Data quality: אילו מקורות נתונים לבדוק, ומה ה-SLA שלהם לטריות ולשלמות? | `data_quality_scan.py` | `deployment/config/settings.yaml`, הסקריפט | טריות של 5 דקות | ❓ |
+| M2 | Enrichment audit: איפה טבלת הספקים ו-ASN, ומה מקור ה-RIPE? מה נחשב העשרה שגויה? | `enrichment_audit.py` | הסקריפט, skill `enrichment-quality` | — | ❓ |
+| M3 | Housekeeping: כמה זמן לשמור היסטוריה, audit ולוגים, ומה מותר למחוק? | `housekeeping.py` | `.env` → `NOC_RETENTION_DAYS` | 365 יום | ❓ |
+
+## N. דוח הבוקר
+| ID | שאלה | למה צריך | איפה נשמרת התשובה | דוגמה / ברירת מחדל | מצב |
+|---|---|---|---|---|---|
+| N1 | מי מקבל את הדוח, באיזו שפה, ואילו סעיפים חובה? יש דוגמה לדוח שהתורן כותב היום? | `oncall-report` | skill `oncall-report`, `reporting/*` | עברית, 6 הסעיפים הקיימים | ❓ |
+| N2 | איך מוגדר "SLA בסיכון" ב-Jira (שדות SLA, עדיפויות)? | סעיף "Needs action today" | `reporting/report_builder.py`, skill `jira-operations` | — | ❓ |
+
+## O. כלים מתוכננים ב-noc-mcp
+| ID | שאלה | למה צריך | איפה נשמרת התשובה | דוגמה / ברירת מחדל | מצב |
+|---|---|---|---|---|---|
+| O1 | מקורות רשת: שרתי DNS לבדיקה, מקור IPAM ו-ASN, ואפשרות לבדוק connectivity מאיזה host? | `tools/network.py` | `backends.yaml` → `network` | — | ❓ |
+| O2 | איפה אפשר לקרוא חוקי firewall ו-ACL (קריאה בלבד)? | `inspect_firewall_rules` | `backends.yaml` | אין, בינתיים לא ממומש | ❓ |
+| O3 | איפה אפשר לבדוק בריאות שירותים, Postgres ו-ECK (מטריקות או API)? | `tools/infrastructure.py` | `backends.yaml` | מטריקות ב-Prometheus | ❓ |
+
+## P. מדיניות ואבטחה
+| ID | שאלה | למה צריך | איפה נשמרת התשובה | דוגמה / ברירת מחדל | מצב |
+|---|---|---|---|---|---|
+| P1 | מותר לשלוח ל-Kimi K3 לוגים, נתוני לקוחות או כתובות IP? המודל on-prem או חיצוני? | מה נכנס להנחיה | `docs/security.md`, `SOUL.md` | on-prem: מותר | ❓ |
+| P2 | דרישות אבטחה ארגוניות: SSO לאפליקציה, שמירת audit, אישור לסוכן AI? מי מאשר? | הגדרת `docs/security.md` | `docs/security.md` | — | ❓ |

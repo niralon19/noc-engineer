@@ -1,5 +1,7 @@
 """Script feeding the `proactive-review` agent cron job (every 15 min).
 
+REQUIRES FROM NIR: K1, K2, K3, E2, E3, E4 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/scripts/anomaly_scan.py`; if BLOCKED, ask Nir. Never invent.
+
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 Hermes runs this script before the agent and passes its STDOUT to the agent as context.
 What to implement:

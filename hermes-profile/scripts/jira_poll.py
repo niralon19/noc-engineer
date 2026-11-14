@@ -1,5 +1,7 @@
 """No-agent cron script: jira_poll.
 
+REQUIRES FROM NIR: H1, H2, L3, L4 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/scripts/jira_poll.py`; if BLOCKED, ask Nir. Never invent.
+
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 Hermes runs this script on schedule (hermes cron create --no-agent --script) and delivers its STDOUT verbatim. No LLM is involved.
 What to implement:

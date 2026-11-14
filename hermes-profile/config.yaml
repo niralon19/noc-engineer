@@ -1,3 +1,4 @@
+# REQUIRES FROM NIR: B2, B3, C1 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/config.yaml`; if BLOCKED, ask Nir. Never invent.
 # Hermes-native config fragment for profile `noc-engineer`.
 # Lives at $HERMES_HOME/config.yaml (usually ~/.hermes/profiles/noc-engineer/config.yaml).
 # Do NOT overwrite the live file with this one: merge the mcp_servers block with

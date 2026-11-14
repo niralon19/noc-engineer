@@ -2,6 +2,8 @@
 """List every fact still missing from Nir, with the question ID from docs/OPEN-QUESTIONS.md.
 
 Run at the start of every session:  python3 scripts/open_items.py   [--json] [--brief]
+Before editing a skeleton file:      python3 scripts/open_items.py --file <path>   (exit 1 = blocked: ask Nir first)
+All skeleton files and their status: python3 scripts/open_items.py --files
 Two sources: (1) signals in the repo (TBD/REPLACE placeholders, unverified pipeline, empty skill knowledge,
 missing config files), (2) questions still marked ❓/⏳ in docs/OPEN-QUESTIONS.md.
 The agent must ASK Nir for these (Hebrew, max 5 at a time) instead of guessing.
@@ -18,6 +20,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 Q_FILE = ROOT / "docs" / "OPEN-QUESTIONS.md"
+MAP_FILE = ROOT / "docs" / "skeleton-files.yaml"
 
 
 def tbd(v) -> bool:
@@ -31,7 +34,7 @@ def load(p: Path) -> dict:
 def questionnaire() -> dict[str, dict]:
     out = {}
     for line in Q_FILE.read_text().splitlines():
-        m = re.match(r"^\|\s*([A-J]\d+)\s*\|\s*(.+?)\s*\|.*\|\s*(❓|⏳|✅)[^|]*\|\s*$", line)
+        m = re.match(r"^\|\s*([A-Z]\d+)\s*\|\s*(.+?)\s*\|.*\|\s*(❓|⏳|✅)[^|]*\|\s*$", line)
         if m:
             out[m.group(1)] = {"question": m.group(2), "state": m.group(3)}
     return out
@@ -118,12 +121,41 @@ def scan() -> dict[str, list[str]]:
     return f
 
 
+def file_map() -> dict[str, list[str]]:
+    return (yaml.safe_load(MAP_FILE.read_text()) or {}).get("files", {}) if MAP_FILE.exists() else {}
+
+
+def file_status(path: str, open_ids: set[str]) -> list[str]:
+    return [q for q in file_map().get(path, []) if q in open_ids]
+
+
 def main() -> int:
     qs, found = questionnaire(), scan()
     ids = sorted(set(found) | {k for k, v in qs.items() if v["state"] != "✅"},
                  key=lambda x: (x[0], int(x[1:])))
     items = [{"id": i, "question": qs.get(i, {}).get("question", "(missing from OPEN-QUESTIONS.md)"),
               "state": qs.get(i, {}).get("state", "❓"), "evidence": found.get(i, [])} for i in ids]
+    open_ids = {it["id"] for it in items}
+    by_id = {it["id"]: it for it in items}
+    if "--file" in sys.argv:
+        path = sys.argv[sys.argv.index("--file") + 1].removeprefix("./")
+        fm = file_map()
+        if path not in fm:
+            print(f"{path}: not a registered skeleton file (docs/skeleton-files.yaml). If it needs facts from Nir, register it.")
+            return 0
+        blocking = file_status(path, open_ids)
+        if not blocking:
+            print(f"{path}: READY - all required answers are in.")
+            return 0
+        print(f"{path}: BLOCKED. Ask Nir before implementing (Hebrew, max 5 per message):")
+        for q in blocking:
+            print(f"  [{q}] {by_id[q]['question']}")
+        return 1
+    if "--files" in sys.argv:
+        for path, ids in sorted(file_map().items()):
+            blocking = [q for q in ids if q in open_ids]
+            print(f"{'BLOCKED' if blocking else 'READY  '}  {path}" + (f"  <- {', '.join(blocking)}" if blocking else ""))
+        return 0
     if "--json" in sys.argv:
         print(json.dumps(items, ensure_ascii=False, indent=2))
     elif "--brief" in sys.argv:
@@ -135,6 +167,10 @@ def main() -> int:
             print(f"[{it['id']}] {it['state']} {it['question']}")
             for e in it["evidence"]:
                 print(f"      - {e}")
+        fm = file_map()
+        blocked = {p: [q for q in ids if q in open_ids] for p, ids in fm.items()}
+        blocked = {p: b for p, b in blocked.items() if b}
+        print(f"\nSKELETON FILES BLOCKED: {len(blocked)}/{len(fm)}  (python3 scripts/open_items.py --files)")
     return 0
 
 

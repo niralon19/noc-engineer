@@ -1,5 +1,7 @@
 # Pipeline map (the most important document for investigations)
 
+> **REQUIRES FROM NIR: E1, E2, E3, E4, E5 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file docs/pipeline-map.md`; if BLOCKED, ask Nir. Never invent.**
+
 > LLM/DEVELOPER: fill from Nir at work. Source of truth for code is `noc-mcp/config/pipeline.yaml`; keep this file and the YAML in sync. Never commit hostnames, IPs or internal metric names while the repo is public.
 
 Every customer-facing problem in this environment ends up as a **hermeticity** or **coupling** problem of a **rule**, but the cause can be any hop on a long path. The agent localizes by walking the path and finding the **first hop where IN and OUT diverge** (bisection), instead of summarizing tool outputs.

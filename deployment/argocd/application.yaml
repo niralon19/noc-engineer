@@ -1,3 +1,4 @@
+# REQUIRES FROM NIR: A1, C4, C1 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file deployment/argocd/application.yaml`; if BLOCKED, ask Nir. Never invent.
 # Argo CD Application for the Hermes NOC engineer. VERIFY project, repo URL (internal mirror), cluster and namespace.
 apiVersion: argoproj.io/v1alpha1
 kind: Application

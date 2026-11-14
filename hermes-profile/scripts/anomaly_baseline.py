@@ -1,5 +1,7 @@
 """No-agent cron script: anomaly_baseline.
 
+REQUIRES FROM NIR: K3, E3, E4 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/scripts/anomaly_baseline.py`; if BLOCKED, ask Nir. Never invent.
+
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 Hermes runs this script on schedule (hermes cron create --no-agent --script) and delivers its STDOUT verbatim. No LLM is involved.
 What to implement:

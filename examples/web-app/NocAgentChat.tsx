@@ -1,3 +1,4 @@
+// REQUIRES FROM NIR: D4 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file examples/web-app/NocAgentChat.tsx`; if BLOCKED, ask Nir. Never invent.
 // React chat panel for the NOC agent. Talks ONLY to your backend (/api/noc-agent/chat), never to Hermes directly.
 // FOR THE LLM / DEVELOPER: adapt styling to the app; keep messages in state and send the full history each turn
 // (chat completions are stateless; the backend also sends X-Hermes-Session-Id for continuity).

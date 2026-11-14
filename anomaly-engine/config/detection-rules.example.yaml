@@ -1,3 +1,4 @@
+# REQUIRES FROM NIR: K1, K2, K3 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file anomaly-engine/config/detection-rules.example.yaml`; if BLOCKED, ask Nir. Never invent.
 # Read by OUR Python code (not Hermes).
 version: 1
 rules:

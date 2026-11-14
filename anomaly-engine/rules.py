@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: K1, K2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file anomaly-engine/rules.py`; if BLOCKED, ask Nir. Never invent.
 Rule loading.
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

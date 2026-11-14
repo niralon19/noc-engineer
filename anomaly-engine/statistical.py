@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: K2, K3 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file anomaly-engine/statistical.py`; if BLOCKED, ask Nir. Never invent.
 Statistical detectors.
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

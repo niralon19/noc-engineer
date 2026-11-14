@@ -10,7 +10,7 @@
 - [x] Cron: `install-cron.sh` (profile-aware, skips stub scripts), prompts for oncall-report and proactive-review
 - [x] Deployment: k8s Hermes (gateway, PVC, Service/Route, profile init container) + noc-mcp pod + NetworkPolicy + Argo Application; `day0-check.sh`
 - [x] Web app chat example (`examples/web-app/`), Hebrew docs (guide, what-is-Hermes)
-- [x] Ask-Nir mechanism: `docs/OPEN-QUESTIONS.md` (43 questions) + `scripts/open_items.py` scanner + mandatory protocol in CLAUDE.md; runtime: tools/health name the question ID, SOUL tells Hermes to ask instead of guessing
+- [x] Ask-Nir mechanism: `docs/OPEN-QUESTIONS.md` (60 questions) + `docs/skeleton-files.yaml` (every skeleton file -> blocking questions, tagged `REQUIRES FROM NIR`) + `scripts/open_items.py` scanner + mandatory protocol in CLAUDE.md; runtime: tools/health name the question ID, SOUL tells Hermes to ask instead of guessing
 - [x] Tests passing (`python3 -m pytest -q tests`)
 
 ## Waiting for Nir at work (blocks real investigations)

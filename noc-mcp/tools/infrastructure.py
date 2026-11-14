@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: O3, G6 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file noc-mcp/tools/infrastructure.py`; if BLOCKED, ask Nir. Never invent.
 noc-mcp tools: infrastructure (Kubernetes: Rancher + OpenShift; Postgres; ECK health).
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

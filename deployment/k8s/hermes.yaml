@@ -1,3 +1,4 @@
+# REQUIRES FROM NIR: B1, C1, C3, A2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file deployment/k8s/hermes.yaml`; if BLOCKED, ask Nir. Never invent.
 # Skeleton. VERIFY image, HERMES_HOME path, gateway command and storage with Nir.
 apiVersion: v1
 kind: PersistentVolumeClaim

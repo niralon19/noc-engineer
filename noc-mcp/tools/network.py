@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: O1, O2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file noc-mcp/tools/network.py`; if BLOCKED, ask Nir. Never invent.
 noc-mcp tools: network.
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

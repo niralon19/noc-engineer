@@ -1,3 +1,4 @@
+# REQUIRES FROM NIR: C2, C3, A2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file deployment/k8s/noc-mcp.yaml`; if BLOCKED, ask Nir. Never invent.
 # noc-mcp: the investigation tools as an MCP server (streamable HTTP :8765). VERIFY image, namespace, secrets.
 # Backend credentials live ONLY here (Secret noc-mcp-env), not in the Hermes pod.
 apiVersion: apps/v1

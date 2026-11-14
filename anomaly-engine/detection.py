@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: K1, K2, E2, E3, E4, G7 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file anomaly-engine/detection.py`; if BLOCKED, ask Nir. Never invent.
 Detection orchestration (5-minute scan).
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

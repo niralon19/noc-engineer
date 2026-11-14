@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: N1, D2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file reporting/daily_report.py`; if BLOCKED, ask Nir. Never invent.
 Daily NOC report entry (07:00 Asia/Jerusalem).
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

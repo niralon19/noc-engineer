@@ -1,0 +1,62 @@
+# Which skeleton / placeholder files need information from Nir before they can be completed.
+# Read by scripts/open_items.py (--files, --file PATH) and checked by tests.
+# Question IDs are defined in docs/OPEN-QUESTIONS.md. A file is BLOCKED while any of its questions is open.
+# Every skeleton file (stub code, TBD config, template doc) must appear here.
+files:
+  # --- Hermes profile
+  hermes-profile/config.yaml: [B2, B3, C1]
+  hermes-profile/skills/traffic-hermetic/SKILL.md: [I1, E3]
+  hermes-profile/skills/coupling/SKILL.md: [I2, E4]
+  hermes-profile/skills/enrichment-quality/SKILL.md: [I2, M2]
+  hermes-profile/skills/capture-servers/SKILL.md: [I3, G2]
+  hermes-profile/skills/kafka-pipeline/SKILL.md: [I4, G3]
+  hermes-profile/skills/platform-operations/SKILL.md: [I5, G5, G6]
+  hermes-profile/skills/coatr/SKILL.md: [I5, G4]
+  hermes-profile/skills/change-correlation/SKILL.md: [F2, G5, G7]
+  hermes-profile/skills/config-change/SKILL.md: [F1, F2, F4]
+  hermes-profile/skills/jira-operations/SKILL.md: [H2, H3, N2]
+  hermes-profile/skills/network-engineering/SKILL.md: [O1, O2]
+  hermes-profile/skills/observability-queries/SKILL.md: [G1, G4]
+  hermes-profile/scripts/anomaly_scan.py: [K1, K2, K3, E2, E3, E4]
+  hermes-profile/scripts/anomaly_baseline.py: [K3, E3, E4]
+  hermes-profile/scripts/data_quality_scan.py: [M1]
+  hermes-profile/scripts/enrichment_audit.py: [M2]
+  hermes-profile/scripts/jira_poll.py: [H1, H2, L3, L4]
+  hermes-profile/scripts/housekeeping.py: [M3, C3]
+  # --- noc-mcp config and planned tools
+  noc-mcp/config/pipeline.yaml: [E1, E2, E3, E4, E5]
+  noc-mcp/config/backends.example.yaml: [G1, G2, G3, G4, G5, G6, G7, F1, F2, F3, H1]
+  noc-mcp/config/rule-paths.example.yaml: [F3, G5]
+  noc-mcp/tools/network.py: [O1, O2]
+  noc-mcp/tools/infrastructure.py: [O3, G6]
+  noc-mcp/tools/data_quality.py: [M1]
+  noc-mcp/tools/enrichment.py: [M2]
+  noc-mcp/schemas/evidence.py: []
+  # --- anomaly engine
+  anomaly-engine/detection.py: [K1, K2, E2, E3, E4, G7]
+  anomaly-engine/rules.py: [K1, K2]
+  anomaly-engine/statistical.py: [K2, K3]
+  anomaly-engine/baselines.py: [K3, C3]
+  anomaly-engine/config/detection-rules.example.yaml: [K1, K2, K3]
+  # --- event ingestion and reporting
+  event-ingestion/grafana_webhook.py: [L1, L2, L4, J3]
+  event-ingestion/jira_webhook.py: [L3, H2]
+  event-ingestion/jira_poller.py: [L3, H1, H2]
+  reporting/daily_report.py: [N1, D2]
+  reporting/report_builder.py: [N1, N2]
+  # --- deployment
+  deployment/k8s/hermes.yaml: [B1, C1, C3, A2]
+  deployment/k8s/noc-mcp.yaml: [C2, C3, A2]
+  deployment/k8s/kustomization.yaml: [C1]
+  deployment/argocd/application.yaml: [A1, C4, C1]
+  deployment/cron/install-cron.sh: [B4, B5, D2]
+  deployment/config/settings.example.yaml: [K1, L1, M1, M3]
+  deployment/.env.example: [A2, B2, D1, D2, D3, H1]
+  examples/web-app/hermes_proxy.py: [D4, P2]
+  examples/web-app/NocAgentChat.tsx: [D4]
+  # --- docs templates
+  docs/pipeline-map.md: [E1, E2, E3, E4, E5]
+  docs/runbooks.md: [I6]
+  docs/security.md: [P1, P2, A2, H3]
+  docs/architecture.md: [E1]
+  docs/investigation-flow.md: [J1]

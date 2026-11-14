@@ -1,3 +1,4 @@
+# REQUIRES FROM NIR: K1, L1, M1, M3 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file deployment/config/settings.example.yaml`; if BLOCKED, ask Nir. Never invent.
 # Read by OUR Python code (not Hermes).
 environment: on-prem
 agent: noc-engineer

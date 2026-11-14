@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: K3, C3 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file anomaly-engine/baselines.py`; if BLOCKED, ask Nir. Never invent.
 Baseline computation.
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

@@ -1,4 +1,6 @@
 """
+
+REQUIRES FROM NIR: L3, H2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file event-ingestion/jira_webhook.py`; if BLOCKED, ask Nir. Never invent.
 Jira webhook receiver.
 
 FOR THE LLM / DEVELOPER OPENING THIS FILE

@@ -1,5 +1,7 @@
 """Backend proxy: lets your web app's chat talk to Hermes without exposing API_SERVER_KEY to the browser.
 
+REQUIRES FROM NIR: D4, P2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file examples/web-app/hermes_proxy.py`; if BLOCKED, ask Nir. Never invent.
+
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 Drop this router into the app's existing Python backend (FastAPI). It streams Hermes' answer back to the UI.
 - Hermes API: OpenAI-compatible, POST {HERMES_URL}/v1/chat/completions, Bearer API_SERVER_KEY.

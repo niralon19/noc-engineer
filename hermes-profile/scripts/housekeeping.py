@@ -1,5 +1,7 @@
 """No-agent cron script: housekeeping.
 
+REQUIRES FROM NIR: M3, C3 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/scripts/housekeeping.py`; if BLOCKED, ask Nir. Never invent.
+
 FOR THE LLM / DEVELOPER OPENING THIS FILE
 Hermes runs this script on schedule (hermes cron create --no-agent --script) and delivers its STDOUT verbatim. No LLM is involved.
 What to implement:

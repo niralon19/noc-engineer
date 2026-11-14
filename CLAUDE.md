@@ -21,11 +21,12 @@ Nir Alon (NOC / network infrastructure engineer). Talk to him in **Hebrew**, bot
 
 ## Ask Nir, don't guess (MANDATORY protocol)
 1. **Session start:** run `python3 scripts/open_items.py`. It lists every fact still missing (placeholders in the repo + open rows in `docs/OPEN-QUESTIONS.md`), each with a question ID.
-2. **Before any task that depends on an open item, ASK Nir first.** Hebrew, at most 5 questions per message, each with: ID, the question, why it is needed for this task, and an example/default he can approve. If the task does not depend on open items, do it, and at the end list the open items that block the next step.
-3. **Never invent** environment facts: hops, metric names, PromQL, endpoints, API paths, Jira projects/JQL/workflow, Slack channels, cluster/namespace, image names, `HERMES_HOME`, Hermes CLI flags or config keys, thresholds, topology, runbooks, skill "Environment knowledge". A placeholder stays `TBD` until Nir answers.
-4. **When Nir answers:** write the answer into the target file named in `docs/OPEN-QUESTIONS.md` (not only the chat), mark the row `✅ <date>`, re-run the scanner, and update `docs/STATUS.md`. Secrets (tokens, passwords) never go into git: tell him which Secret/env var to set.
-5. If he does not know: mark `⏳` with who can answer, and continue only with work that does not depend on it.
-6. If you discover a NEW missing fact, add a row to `docs/OPEN-QUESTIONS.md` (next ID in its section) and a check for it in `scripts/open_items.py`.
+2. **Skeleton files:** every stub/placeholder file starts with `REQUIRES FROM NIR: <IDs>` and is listed in `docs/skeleton-files.yaml`. Before editing one, run `python3 scripts/open_items.py --file <path>`; exit code 1 = BLOCKED: ask Nir for those IDs first. `--files` shows the status of all skeleton files. New skeleton files must be registered and tagged.
+3. **Before any task that depends on an open item, ASK Nir first.** Hebrew, at most 5 questions per message, each with: ID, the question, why it is needed for this task, and an example/default he can approve. If the task does not depend on open items, do it, and at the end list the open items that block the next step.
+4. **Never invent** environment facts: hops, metric names, PromQL, endpoints, API paths, Jira projects/JQL/workflow, Slack channels, cluster/namespace, image names, `HERMES_HOME`, Hermes CLI flags or config keys, thresholds, topology, runbooks, skill "Environment knowledge". A placeholder stays `TBD` until Nir answers.
+5. **When Nir answers:** write the answer into the target file named in `docs/OPEN-QUESTIONS.md` (not only the chat), mark the row `✅ <date>`, re-run the scanner, and update `docs/STATUS.md`. Secrets (tokens, passwords) never go into git: tell him which Secret/env var to set.
+6. If he does not know: mark `⏳` with who can answer, and continue only with work that does not depend on it.
+7. If you discover a NEW missing fact, add a row to `docs/OPEN-QUESTIONS.md` (next ID in its section) and a check for it in `scripts/open_items.py`.
 
 ## Architecture (do not change without asking)
 - ONE Hermes agent (profile `noc-engineer`). Hermes = brain, Skills = methodology, MCP = tools. No multi-agent, no CrewAI as a permanent layer.
