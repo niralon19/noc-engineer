@@ -7,6 +7,24 @@
 #
 # LLM/DEVELOPER: ask Nir before changing: Hermes version, local LLM endpoint,
 # MCP transport (stdio command vs HTTP url) and whether an internal MCP server already exists.
+# ---- Model: Kimi K3 through an OpenAI-compatible endpoint (custom provider) ----
+# Equivalent: `hermes model` -> Custom endpoint. The key goes to .env (OPENAI_API_KEY), not here.
+model:
+  provider: custom
+  default: kimi-k3                      # VERIFY exact model id served by your endpoint (GET /v1/models)
+  base_url: "https://REPLACE-kimi-endpoint/v1"   # VERIFY: internal Kimi K3 endpoint, include /v1
+  # context_length: 1048576             # set only if auto-detection is wrong
+
+# ---- Gateway API server: lets the web app / Open WebUI talk to Hermes (OpenAI-compatible, port 8642) ----
+# Secrets (API_SERVER_KEY) go to .env. Env vars override these values.
+gateway:
+  api_server:
+    enabled: true
+    host: 0.0.0.0                       # inside the pod; exposed only through the k8s Service/Route
+    port: 8642
+    model_name: noc-engineer            # name the UI shows in its model picker
+    max_concurrent_runs: 10
+
 mcp_servers:
   noc_mcp:                      # underscores: Hermes rewrites '-' and '.' in server/tool names
     # --- choose ONE transport (the keys do not mix) ---

@@ -101,3 +101,18 @@ def test_sync_profile_removes_stale_repo_skills(tmp_path):
     assert not (home / "skills" / "old-repo-skill").exists()
     assert (home / "skills" / "agent-made").exists()
     assert {p.name for p in (home / "skills").iterdir()} >= set(SKILLS)
+
+
+def test_hermes_runtime_requirements_present():
+    import yaml
+    cfg = yaml.safe_load((ROOT / "hermes-profile" / "config.yaml").read_text())
+    assert cfg["model"]["provider"] == "custom" and cfg["model"]["base_url"].endswith("/v1")
+    api = cfg["gateway"]["api_server"]
+    assert api["enabled"] is True and api["port"] == 8642 and "key" not in api   # key only in .env
+    env = (ROOT / "deployment" / ".env.example").read_text()
+    for var in ["OPENAI_API_KEY", "API_SERVER_KEY", "SLACK_BOT_TOKEN", "SLACK_APP_TOKEN", "SLACK_ALLOWED_USERS", "SLACK_HOME_CHANNEL"]:
+        assert f"{var}=" in env, var
+    k8s = list(yaml.safe_load_all((ROOT / "deployment" / "k8s" / "hermes.yaml").read_text()))
+    dep = next(d for d in k8s if d["kind"] == "Deployment")
+    assert dep["spec"]["replicas"] == 1
+    assert {d["kind"] for d in k8s} >= {"Service", "Route", "PersistentVolumeClaim"}

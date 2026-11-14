@@ -3,10 +3,11 @@
 
 ## Read first
 1. `docs/מדריך-הפרויקט.md` — Hebrew guide: every folder/file and what is left to do.
-2. `docs/pipeline-map.md` + `noc-mcp/config/pipeline.yaml` — the data path; core of every investigation.
-3. `docs/project-map.he.md` — the original project map (Hebrew, original intent).
-4. `docs/hermes-noc-overview.png` — the overview diagram. It is a VISION, not a spec: build the MVP first.
-5. `README.md` — repo map and start order. Each source file has a header docstring saying what to implement.
+2. `docs/מה-זה-הרמס.md` — what Hermes is, entry points (Slack, API server, CLI) and what it requires.
+3. `docs/pipeline-map.md` + `noc-mcp/config/pipeline.yaml` — the data path; core of every investigation.
+4. `docs/project-map.he.md` — the original project map (Hebrew, original intent).
+5. `docs/hermes-noc-overview.png` — the overview diagram. It is a VISION, not a spec: build the MVP first.
+6. `README.md` — repo map and start order. Each source file has a header docstring saying what to implement.
 
 ## Who you work with
 Nir Alon (NOC / network infrastructure engineer). Talk to him in **Hebrew**, bottom line first, concise, no padding. Code, comments, commit messages and SKILL/SOUL files are in **English**. Push back honestly; do not just agree.

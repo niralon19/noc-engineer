@@ -24,6 +24,7 @@ Every investigation must locate the problem (`suspected_location.hop`, `rule_id`
 - The Python anomaly engine is rule-centric (hermeticity/coupling per rule vs baseline, hop divergence) and deterministic. Hermes correlates and explains.
 - Uses existing infrastructure: Kafka for events, org Postgres for investigation history. No RabbitMQ.
 - Production deploy: OpenShift/Rancher via Argo CD (`deployment/k8s`, `deployment/argocd`). `docker-compose.yml` is local dev only.
+- Entry points: Slack (Socket Mode), the web app via the API server (`examples/web-app/`), CLI. What Hermes is and how users reach it (Hebrew): `docs/מה-זה-הרמס.md`.
 - Hebrew guide to every folder and file: `docs/מדריך-הפרויקט.md`.
 
 ## Repository map

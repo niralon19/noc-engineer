@@ -10,7 +10,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata: {name: hermes-noc-engineer}
 spec:
-  replicas: 1                      # single gateway: cron must not run twice
+  replicas: 1                      # exactly one: cron must not run twice and Slack Socket Mode allows one connection per app token
   strategy: {type: Recreate}
   selector: {matchLabels: {app: hermes-noc-engineer}}
   template:
@@ -28,7 +28,11 @@ spec:
       containers:
         - name: hermes
           image: TBD-hermes-image
-          args: ["TBD: gateway start command for profile noc-engineer"]
+          # Gateway runs Slack (Socket Mode), cron and the API server in one process. VERIFY flags on your version.
+          command: ["hermes", "-p", "noc-engineer", "gateway", "run"]
+          ports: [{name: api, containerPort: 8642}]
+          readinessProbe: {httpGet: {path: /health, port: api}, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /health, port: api}, initialDelaySeconds: 30, periodSeconds: 20}
           env: [{name: HERMES_HOME, value: TBD-path}]
           envFrom: [{secretRef: {name: hermes-noc-engineer-env}}]   # created outside git
           resources:
@@ -38,3 +42,19 @@ spec:
       volumes:
         - {name: home, persistentVolumeClaim: {claimName: hermes-home}}
         - {name: profile-src, configMap: {name: hermes-profile}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: hermes-noc-engineer}
+spec:
+  selector: {app: hermes-noc-engineer}
+  ports: [{name: api, port: 8642, targetPort: api}]
+---
+# OpenShift Route (on Rancher use an Ingress). Expose only to the internal network / the web app backend.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata: {name: hermes-noc-engineer}
+spec:
+  to: {kind: Service, name: hermes-noc-engineer}
+  port: {targetPort: api}
+  tls: {termination: edge, insecureEdgeTerminationPolicy: Redirect}

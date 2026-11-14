@@ -5,7 +5,7 @@
 set -euo pipefail
 HERMES="${HERMES_BIN:-hermes}"
 SCRIPTS="${HERMES_HOME:-$HOME/.hermes}/scripts"
-DELIVER="${NOC_DELIVER:-local}"          # local | slack:<channel> | ... (see Hermes --deliver docs); set to the on-call/team channel
+DELIVER="${NOC_DELIVER:-slack}"          # VERIFY delivery syntax with `hermes cron create --help`; slack = SLACK_HOME_CHANNEL
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 job_script() { # name schedule script
