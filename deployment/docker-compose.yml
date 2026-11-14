@@ -1,3 +1,4 @@
+# LLM/DEVELOPER NOTE: services are OPTIONAL (profile "optional"); not needed for the MVP. Hermes itself is not defined here: ask Nir how Hermes is deployed (official Docker image? existing host?) and verify the HERMES_HOME volume path before adding it.
 services:
   postgres:
     profiles: ["optional"]

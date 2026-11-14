@@ -1,3 +1,5 @@
+# LLM NOTE: deterministic core; no LLM or network calls. Imported by tests via tests/conftest.py
+# (the directory name has a hyphen). Extend with rules.py/statistical.py, keep evaluate() pure.
 """Deterministic anomaly evaluation; no LLM invocation in the metric hot path."""
 from dataclasses import dataclass
 from datetime import datetime, timezone

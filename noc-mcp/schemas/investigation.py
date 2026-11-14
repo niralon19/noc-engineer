@@ -1,3 +1,6 @@
+# LLM NOTE: this is the single result format for every investigation (Grafana, Jira, proactive).
+# Keep schema_version in sync with docs/investigation-flow.md. Use categorical status only;
+# do NOT add a numeric confidence field (a local LLM will invent precise-looking numbers).
 """Uniform investigation result."""
 from dataclasses import dataclass, field
 from enum import Enum

@@ -1,7 +1,9 @@
-# Hermes profile config for noc-engineer.
-# Verify real keys against the Hermes docs before deploying.
+# LLM/DEVELOPER NOTE: mirror of the live Hermes profile config. Do NOT guess keys:
+# verify against the installed Hermes version (`hermes config check`, docs: hermes-agent.nousresearch.com/docs).
+# Ask Nir: Hermes version, model/provider (local LLM endpoint), MCP transport and URL.
+# Secrets go to .env (never here).
 mcp_servers:
   noc-mcp:
-    # TODO: transport/command/url for noc-mcp
-    # TODO: tool allow-list (start with ~8 read-only tools + jira comment/create)
+    # TODO: transport/command or url for the MCP server
+    # TODO: tool allow-list (start ~8 read-only tools + jira comment/create)
     {}
