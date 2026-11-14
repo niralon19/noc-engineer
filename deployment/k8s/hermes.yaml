@@ -20,7 +20,7 @@ spec:
       initContainers:
         - name: sync-profile
           image: TBD-hermes-image
-          command: ["/bin/sh", "-c", "TBD: copy /profile-src into $HERMES_HOME (SOUL.md, skills/, scripts/); remove repo-managed skills that are no longer in the ConfigMap"]
+          command: ["/bin/sh", "/profile-src/profile-init.sh"]
           env: [{name: HERMES_HOME, value: TBD-path}]
           volumeMounts:
             - {name: home, mountPath: TBD-path}

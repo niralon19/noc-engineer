@@ -43,7 +43,7 @@ def test_six_cron_jobs_defined_via_hermes_cli_script():
     for name in ["data-quality-scan", "enrichment-audit", "anomaly-baseline",
                  "jira-polling-backup", "housekeeping", "proactive-review", "oncall-report"]:
         assert name in script, name
-    assert "hermes\" cron create" in script or '"$HERMES" cron create' in script
+    assert "hermes cron create" in script
     assert not list((ROOT / "deployment" / "cron").glob("*.yaml"))  # Hermes does not read cron YAML
 
 
@@ -116,3 +116,43 @@ def test_hermes_runtime_requirements_present():
     dep = next(d for d in k8s if d["kind"] == "Deployment")
     assert dep["spec"]["replicas"] == 1
     assert {d["kind"] for d in k8s} >= {"Service", "Route", "PersistentVolumeClaim"}
+
+
+def _run(cmd, **env):
+    import os
+    import subprocess
+    return subprocess.run(cmd, capture_output=True, text=True, env={**os.environ, **env})
+
+
+def test_install_cron_default_skips_stub_scripts_and_targets_profile():
+    r = _run(["bash", str(ROOT / "deployment" / "cron" / "install-cron.sh"), "--dry-run", "--profile", "noc-engineer"])
+    assert r.returncode == 0, r.stderr
+    created = [l for l in r.stdout.splitlines() if " cron create " in l]
+    assert all("hermes -p noc-engineer cron create" in l for l in created)
+    assert "OK   oncall-report" in r.stdout and "SKIP data-quality-scan" in r.stdout
+
+
+def test_install_cron_all_and_single_job():
+    script = str(ROOT / "deployment" / "cron" / "install-cron.sh")
+    assert _run(["bash", script, "--dry-run", "--all"]).stdout.count("OK   ") == 7
+    one = _run(["bash", script, "--dry-run", "proactive-review"]).stdout
+    assert "OK   proactive-review" in one and "oncall-report" not in one.replace("cron list", "")
+
+
+def test_kustomization_is_fresh():
+    r = _run(["python3", str(ROOT / "deployment" / "k8s" / "gen_kustomization.py"), "--check"])
+    assert r.returncode == 0, r.stderr
+
+
+def test_profile_init_unflattens_and_prunes(tmp_path):
+    import shutil
+    src, home = tmp_path / "src", tmp_path / "home"
+    src.mkdir(); (home / "skills" / "old").mkdir(parents=True); (home / "skills" / "agent-made").mkdir()
+    (home / ".repo-managed-skills").write_text("old\n")
+    shutil.copy(ROOT / "hermes-profile" / "SOUL.md", src / "SOUL.md")
+    for p in (ROOT / "hermes-profile" / "skills").glob("*/SKILL.md"):
+        shutil.copy(p, src / f"skills__{p.parent.name}__SKILL.md")
+    r = _run(["sh", str(ROOT / "deployment" / "k8s" / "profile-init.sh")], PROFILE_SRC=str(src), HERMES_HOME=str(home))
+    assert r.returncode == 0, r.stderr
+    names = {p.name for p in (home / "skills").iterdir()}
+    assert "old" not in names and "agent-made" in names and set(SKILLS) <= names

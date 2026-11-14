@@ -5,11 +5,12 @@
 # VERIFY the profile path for your Docker image / host before first use.
 set -euo pipefail
 PROFILE="${PROFILE:-noc-engineer}"
+[ "${1:-}" = "--profile" ] && PROFILE="$2"
 HERMES="${HERMES_BIN:-hermes}"
 SRC="$(cd "$(dirname "$0")/../hermes-profile" && pwd)"
 DEST="${HERMES_HOME:-$HOME/.hermes/profiles/$PROFILE}"
 
-[ -d "$DEST" ] || "$HERMES" profile create "$PROFILE"
+[ -d "$DEST" ] || "$HERMES" profile create "$PROFILE"   # VERIFY: `hermes profile --help`
 mkdir -p "$DEST/skills" "$DEST/scripts"
 cp "$SRC/SOUL.md" "$DEST/SOUL.md"
 # Remove skills that THIS repo deployed before but no longer has (renamed/deleted),
@@ -25,4 +26,4 @@ cp -a "$SRC/skills/." "$DEST/skills/"
 cp -a "$SRC/scripts/." "$DEST/scripts/"
 find "$DEST/scripts" -name "__pycache__" -prune -exec rm -rf {} +
 echo "Synced SOUL.md, skills/, scripts/ -> $DEST"
-echo "Next: merge mcp_servers from hermes-profile/config.yaml, then: hermes config check && hermes mcp test noc_mcp && deployment/cron/install-cron.sh"
+echo "Next: merge mcp_servers from hermes-profile/config.yaml, then: deployment/day0-check.sh --profile $PROFILE"

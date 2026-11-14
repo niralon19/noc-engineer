@@ -9,3 +9,9 @@
 - One process (`hermes gateway run`) serves Slack, cron and the API server (port 8642, `/health`). Service + Route expose the API to the web app backend only; never to browsers directly.
 - Secret `hermes-noc-engineer-env` holds the values from `deployment/.env.example` (OPENAI_API_KEY, API_SERVER_KEY, SLACK_*, backends).
 - After first deploy: exec into the pod and run `deployment/cron/install-cron.sh` once.
+
+## Commands
+```bash
+python3 deployment/k8s/gen_kustomization.py      # after adding/removing skills or scripts (a test checks it is fresh)
+kubectl kustomize deployment/k8s                 # render locally before committing
+```

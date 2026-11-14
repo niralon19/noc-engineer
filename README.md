@@ -43,12 +43,14 @@ Every investigation must locate the problem (`suspected_location.hop`, `rule_id`
 ## Hermes-native vs ours
 Hermes reads only: `SOUL.md`, `skills/`, `config.yaml` (MCP block), `scripts/` and cron jobs created through its CLI. Everything else in the repo is our own code or design spec. Full table: `docs/hermes-mapping.md`.
 
-## Deploying the profile
+## Getting started (at work)
 ```bash
-deployment/sync-profile.sh          # copies SOUL.md, skills/, scripts/ (never a symlink)
-# merge mcp_servers from hermes-profile/config.yaml, then:
-hermes config check && hermes mcp test noc_mcp
-deployment/cron/install-cron.sh     # creates the 6 jobs via `hermes cron create`
+# production: Argo CD syncs deployment/k8s (init container unpacks the profile into the PVC)
+python3 deployment/k8s/gen_kustomization.py           # after adding/removing skills or scripts
+# inside the pod (or a host with Hermes; dev alternative: deployment/sync-profile.sh --profile noc-engineer)
+deployment/day0-check.sh --profile noc-engineer       # CLI, profile, config, model, MCP, API, Slack, cron
+deployment/cron/install-cron.sh oncall-report         # first cron job
+hermes -p noc-engineer cron run oncall-report         # test it now
 ```
 Change live settings with `hermes config set`; do not overwrite the live `config.yaml`.
 

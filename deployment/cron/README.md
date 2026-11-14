@@ -2,7 +2,17 @@
 
 Hermes does **not** read cron YAML. Jobs are created with `hermes cron create` (or `/cron add`, or by asking Hermes) and stored by Hermes in `$HERMES_HOME/cron/jobs.json`. Do not hand-edit that JSON. Docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/cron
 
-`install-cron.sh` recreates the six jobs idempotently (remove by name, then create).
+`install-cron.sh` creates/refreshes jobs idempotently (remove by name, then create), always with `-p <profile>`.
+
+```bash
+deployment/cron/install-cron.sh --dry-run                 # see what would run
+deployment/cron/install-cron.sh                           # agent jobs + script jobs whose script is implemented
+deployment/cron/install-cron.sh oncall-report             # one job
+deployment/cron/install-cron.sh --all                     # everything, even stub scripts
+hermes -p noc-engineer cron run oncall-report             # run now to test
+hermes -p noc-engineer cron list | remove <name>
+```
+Script jobs are skipped automatically while their script still raises NotImplementedError, so nothing fails every few minutes.
 
 | Job | Schedule | Mode | What runs |
 |---|---|---|---|
