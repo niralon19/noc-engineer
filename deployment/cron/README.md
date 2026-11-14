@@ -10,8 +10,9 @@ Hermes does **not** read cron YAML. Jobs are created with `hermes cron create` (
 | enrichment-audit | `*/30 * * * *` | no-agent script | `scripts/enrichment_audit.py` |
 | anomaly-baseline | `0 * * * *` | no-agent script | `scripts/anomaly_baseline.py` |
 | jira-polling-backup | `*/2 * * * *` | no-agent script | `scripts/jira_poll.py` |
-| noc-daily-report | `0 7 * * *` | agent (skills attached) | `prompts/noc-daily-report.md` |
 | housekeeping | `0 2 * * *` | no-agent script | `scripts/housekeeping.py` |
+| proactive-review | `*/15 * * * *` | agent + `--script anomaly_scan.py` | `prompts/proactive-review.md`; answers `[SILENT]` when there are no findings |
+| oncall-report | `0 7 * * *` | agent | `prompts/oncall-report.md`, skill `oncall-report`, delivered to the on-call channel |
 
 Rules from the Hermes docs:
 - No-agent mode runs a script and delivers its stdout verbatim; no LLM, no tokens. Use it for every deterministic check.

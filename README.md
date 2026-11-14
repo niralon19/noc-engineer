@@ -1,6 +1,17 @@
 # noc-engineer — Hermes NOC Engineer
 
-Single primary Hermes agent (profile `noc-engineer`) for on-prem NOC investigation, early anomaly detection, Jira coordination and a daily report. Runs in Docker, read-only by default.
+Single Hermes agent (profile `noc-engineer`) that replaces the CrewAI pipeline (`crew-network`). Model: Kimi K3 via an OpenAI-compatible endpoint. Read-only by default.
+
+## Routes
+| Route | Entry | Skills |
+|---|---|---|
+| New alert | Grafana webhook (existing router + dedup forwards to Hermes) | `alert-investigation` + domain |
+| Customer/team Jira ticket | Jira webhook + polling | `customer-ticket` + domain |
+| Team question | Web chat / Slack | `user-question` |
+| Early detection | cron `proactive-review` (anomaly engine script -> agent) | `proactive-review` |
+| On-call morning report | cron `oncall-report` 07:00 | `oncall-report` |
+
+Domain skills: `traffic-hermetic`, `coupling`, `coatr`. Every investigation must locate the problem (`suspected_location`, `onset_time`, `ruled_out`, `next_check`); see `noc-mcp/schemas/investigation.py`.
 
 ## Architecture
 - **Hermes = brain**, **Skills = methodology**, **MCP = tool access**. One agent, seven skills, one MCP layer. No multi-agent, no CrewAI as a permanent layer.
@@ -34,16 +45,15 @@ deployment/cron/install-cron.sh     # creates the 6 jobs via `hermes cron create
 Change live settings with `hermes config set`; do not overwrite the live `config.yaml`.
 
 ## Cron
-Six jobs (data-quality `*/15`, enrichment `*/30`, baseline `0 *`, Jira polling `*/2`, daily report `0 7`, housekeeping `0 2`). Deterministic ones run as **no-agent scripts** (no LLM); only the daily report uses the agent. Details: `deployment/cron/README.md`.
+7 jobs: 5 deterministic no-agent scripts, `proactive-review` (every 15 min) and `oncall-report` (07:00). Details: `deployment/cron/README.md`.
 
 ## Start order
-0. **Day 0:** test the local LLM on a synthetic multi-step tool-calling investigation. If it fails, nothing else matters.
-1. Profile + `SOUL.md` + 3 core skills (observability, investigation, ITSM) + MCP with ~8 read-only tools; one real investigation.
-2. Evaluation set: 20–30 resolved historical alerts with known root cause.
-3. Webhook/polling intake, dedup, history.
-4. Proactive monitoring (anomaly engine), data quality, enrichment.
-5. Cron, daily report, SLA tracking.
-6. Hardening: permissions, failure tests, idempotency, Hermes-vs-CrewAI comparison.
+0. Connect Kimi K3 + the existing FastMCP server to Hermes; one real alert end to end.
+1. `alert-investigation` + one domain skill; compare with what CrewAI wrote in Jira for the same alert.
+2. Shadow mode on 20–30 resolved alerts: Hermes writes only to a Slack channel/log, CrewAI keeps owning Jira.
+3. Switch ownership; add `customer-ticket`, `user-question`.
+4. `proactive-review` + `oncall-report`.
+5. Hardening (permissions, failure tests, idempotency). See `docs/migration-from-crewai.md`.
 
 ## Optional services
 ```bash

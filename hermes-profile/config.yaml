@@ -25,8 +25,8 @@ mcp_servers:
       include:
         - query_metrics
         - get_alerts
-        - get_metric_history
-        - compare_baseline
+        - query_logs
+        - get_deployment_history
         - search_investigations
         - get_issue
         - search_issues

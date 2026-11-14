@@ -1,0 +1,1 @@
+Produce the morning report for today's on-call engineer, covering the last 24 hours (Asia/Jerusalem). Follow the oncall-report skill. Use only MCP tools and data you can query; if a system is unavailable, list it under data/tool health. Do not change anything in Jira or production.

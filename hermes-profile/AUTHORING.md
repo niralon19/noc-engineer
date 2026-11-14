@@ -2,17 +2,11 @@
 
 `SOUL.md` and `skills/*/SKILL.md` go into the model prompt. Keep them short, imperative, English, and free of developer notes.
 
-## Filling a SKILL.md
-Replace each `TODO` with concrete content:
-- **When to use:** trigger conditions (alert types, keywords, data domains).
-- **Tools to call:** exact tool names from `noc-mcp/config/tool-contracts.yaml` (verified via MCP discovery), in order.
-- **Order of checks:** numbered steps; check the time window before and after the event.
-- **Required data:** inputs the skill needs before starting; ask/state what is missing.
-- **Cross-referencing:** which independent sources must agree before concluding.
-- **Failure modes:** tool down, stale data, missing samples -> say so, do not invent.
-- **Verification:** what must be true to call a conclusion CONFIRMED.
-- **Output:** the standard investigation result (`noc-mcp/schemas/investigation.py`).
-Write the skill ONLY after a real investigation shows what the agent got wrong; start with sre-observability, incident-investigation, itsm-coordination.
+## Skill layout
+- Route skills (procedure): alert-investigation, customer-ticket, user-question, proactive-review, oncall-report. The investigation protocol and output contract live ONLY in alert-investigation; others reference it.
+- Domain skills (knowledge): traffic-hermetic, coupling, coatr. Port the domain logic from the CrewAI agents/tools. Fill "Environment knowledge" only with facts from Nir/the team (metric meaning, normal ranges, known causes, owners). Delete the HTML comment once filled.
+- Keep tool names in skills equal to the names exposed by the MCP server (and listed in config.yaml tools.include).
+- Change a skill only after a real investigation shows what went wrong; add that case to the evaluation set.
 
 ## config.yaml
 Add the `mcp_servers` entry for the MCP server and a tool allow-list (start ~8 read-only tools + Jira comment/create). Verify exact keys against the installed Hermes version (`hermes config check`).
