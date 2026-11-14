@@ -12,7 +12,7 @@ DEST="${HERMES_HOME:-$HOME/.hermes/profiles/$PROFILE}"
 [ -d "$DEST" ] || "$HERMES" profile create "$PROFILE"
 mkdir -p "$DEST/skills" "$DEST/scripts"
 cp "$SRC/SOUL.md" "$DEST/SOUL.md"
-rsync -a --delete "$SRC/skills/" "$DEST/skills/"      # NOTE: --delete would also remove skills Hermes created itself; drop it if you want to keep those
-rsync -a "$SRC/scripts/" "$DEST/scripts/"
+cp -a "$SRC/skills/." "$DEST/skills/"     # no --delete: keeps skills Hermes created itself
+cp -a "$SRC/scripts/." "$DEST/scripts/"
 echo "Synced SOUL.md, skills/, scripts/ -> $DEST"
 echo "Next: merge mcp_servers from hermes-profile/config.yaml, then: hermes config check && hermes mcp test noc_mcp && deployment/cron/install-cron.sh"
