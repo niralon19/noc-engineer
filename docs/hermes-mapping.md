@@ -11,7 +11,7 @@ Verified against the Hermes docs (links below). "Ask Nir" items are not verified
 | `deployment/cron/install-cron.sh` | run once | **Hermes CLI** (`hermes cron create`) | Jobs are stored by Hermes in `cron/jobs.json`; never hand-edit |
 | `deployment/cron/prompts/*.md` | read by install script | Hermes (as job prompt) | Self-contained: each run is a fresh session |
 | `deployment/.env.example` | `.env` | Hermes (secrets) + our code | Secrets only |
-| `noc-mcp/` | MCP server | Hermes connects to it as an MCP server | Tools appear as `mcp_noc_mcp_<tool>` |
+| `noc-mcp/` | own pod (streamable HTTP :8765/mcp) | Hermes connects via `mcp_servers.noc_mcp.url` | 18 implemented tools; appear as `mcp_noc_mcp_<tool>` |
 | `noc-mcp/config/tool-contracts.yaml`, `anomaly-engine/config/*`, `deployment/config/*`, `workflows/*.yaml`, `workflows/event-schema.json` | - | **our Python code only** | Not Hermes files |
 | `deployment/k8s/`, `deployment/argocd/` | cluster | Argo CD | Hermes Deployment + PVC + profile ConfigMap (skeleton, TBD values) |
 | `noc-mcp/config/pipeline.yaml` | - | our code | Pipeline hops and KPI definitions |

@@ -31,7 +31,7 @@ Every investigation must locate the problem (`suspected_location.hop`, `rule_id`
 | Path | Purpose |
 |---|---|
 | `hermes-profile/` | Version-controlled mirror of `HERMES_HOME`: `SOUL.md`, `config.yaml` fragment, `skills/<name>/SKILL.md`, `scripts/` (no-agent cron) |
-| `noc-mcp/` | MCP tool contract + pipeline map (`config/`), tool/client stubs, investigation schema and fingerprint |
+| `noc-mcp/` | MCP server with 18 implemented, config-driven investigation tools (`noc-mcp/README.md`), pipeline map, investigation schema, fingerprint, write gate |
 | `anomaly-engine/` | Deterministic detection (`anomaly_engine.py`, rules, baselines) |
 | `event-ingestion/` | Grafana/Jira webhooks and polling (reuse the existing Grafana→Jira agent) |
 | `reporting/` | Daily NOC report |

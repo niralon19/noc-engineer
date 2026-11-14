@@ -1,0 +1,49 @@
+# noc-mcp: the investigation tools as an MCP server (streamable HTTP :8765). VERIFY image, namespace, secrets.
+# Backend credentials live ONLY here (Secret noc-mcp-env), not in the Hermes pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: noc-mcp}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: noc-mcp}}
+  template:
+    metadata: {labels: {app: noc-mcp}}
+    spec:
+      securityContext: {runAsNonRoot: true}
+      containers:
+        - name: noc-mcp
+          image: TBD-registry/noc-mcp:TBD
+          ports: [{name: mcp, containerPort: 8765}]
+          envFrom: [{secretRef: {name: noc-mcp-env}}]       # PROMETHEUS_URL, ECK_*, ARGOCD_*, *_TOKEN, JIRA_*, RULES_API_*
+          env:
+            - {name: NOC_MCP_ALLOW_WRITES, value: "false"}   # Jira comments stay off until shadow mode is over
+          volumeMounts:
+            - {name: config, mountPath: /config}
+            - {name: data, mountPath: /data}
+          readinessProbe: {tcpSocket: {port: mcp}, periodSeconds: 10}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {memory: 512Mi}
+      volumes:
+        - name: config
+          configMap: {name: noc-mcp-config}                  # backends.yaml, pipeline.yaml, rule-paths.yaml
+        - name: data
+          emptyDir: {}                                       # TBD: PVC (or org Postgres) for history + audit log
+---
+apiVersion: v1
+kind: Service
+metadata: {name: noc-mcp}
+spec:
+  selector: {app: noc-mcp}
+  ports: [{name: mcp, port: 8765, targetPort: mcp}]
+---
+# Only the Hermes pod may call noc-mcp.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: noc-mcp-only-from-hermes}
+spec:
+  podSelector: {matchLabels: {app: noc-mcp}}
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{podSelector: {matchLabels: {app: hermes-noc-engineer}}}]
+      ports: [{port: 8765}]

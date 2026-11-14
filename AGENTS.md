@@ -13,7 +13,7 @@
 Nir Alon (NOC / network infrastructure engineer). Talk to him in **Hebrew**, bottom line first, concise, no padding. Code, comments, commit messages and SKILL/SOUL files are in **English**. Push back honestly; do not just agree.
 
 ## Ask Nir, don't guess
-If a fact is missing, ASK before coding. Never invent: MCP tool names/schemas, Hermes version or config keys, `HERMES_HOME` path, Jira project keys/workflow/transitions/SLA, Slack channel, Prometheus/Thanos/ECK/Kafka/Argo endpoints, metric names, thresholds, topology. Typical questions: which model runs locally, does the internal MCP server already exist (then `noc-mcp/` is contract + allowlist only), how Hermes is triggered from a webhook. Batch questions; offer a default he can approve.
+If a fact is missing, ASK before coding. Never invent: MCP tool names/schemas, Hermes version or config keys, `HERMES_HOME` path, Jira project keys/workflow/transitions/SLA, Slack channel, Prometheus/Thanos/ECK/Kafka/Argo endpoints, metric names, thresholds, topology. Typical questions: which model runs locally, whether to run `noc-mcp/` standalone or register its tools into the team's existing FastMCP (`server.register()`), how Hermes is triggered from a webhook. Batch questions; offer a default he can approve.
 
 ## Architecture (do not change without asking)
 - ONE Hermes agent (profile `noc-engineer`). Hermes = brain, Skills = methodology, MCP = tools. No multi-agent, no CrewAI as a permanent layer.
@@ -36,4 +36,5 @@ Model: Kimi K3 (OpenAI-compatible). Use lower reasoning_effort for cron/question
 - `hermes-profile/` mirrors `HERMES_HOME`. `SOUL.md` and `SKILL.md` are loaded into the model prompt: never put developer notes in them (use `hermes-profile/AUTHORING.md`).
 - Change live Hermes config with `hermes config set`; deploy by sync script, not a bare symlink.
 - No secrets in git; keep the repo private; no internal IPs/topology/logs committed.
-- Run tests: `python3 -m pytest -q tests`. Keep them offline.
+- noc-mcp tools are config-driven: never hardcode URLs, metric names or API paths in code; add them to `noc-mcp/config/*.yaml` and return `not_configured` when missing.
+- Run tests: `python3 -m pytest -q tests`. Keep them offline (fake HTTP, see tests/test_noc_mcp_tools.py).

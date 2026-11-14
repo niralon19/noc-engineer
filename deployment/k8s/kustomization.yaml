@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: TBD-noc-engineer
 resources:
   - hermes.yaml
+  - noc-mcp.yaml
 configMapGenerator:
   - name: hermes-profile
     files:
@@ -33,3 +34,8 @@ configMapGenerator:
       - scripts__enrichment_audit.py=../../hermes-profile/scripts/enrichment_audit.py
       - scripts__housekeeping.py=../../hermes-profile/scripts/housekeeping.py
       - scripts__jira_poll.py=../../hermes-profile/scripts/jira_poll.py
+  - name: noc-mcp-config
+    files:
+      - backends.yaml=../../noc-mcp/config/backends.example.yaml   # TBD: point at the real (private) backends.yaml
+      - pipeline.yaml=../../noc-mcp/config/pipeline.yaml
+      - rule-paths.yaml=../../noc-mcp/config/rule-paths.example.yaml

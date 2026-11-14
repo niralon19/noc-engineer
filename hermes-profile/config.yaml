@@ -27,12 +27,12 @@ gateway:
 
 mcp_servers:
   noc_mcp:                      # underscores: Hermes rewrites '-' and '.' in server/tool names
-    # --- choose ONE transport (the keys do not mix) ---
-    command: "python"           # stdio: Hermes spawns the process
-    args: ["-m", "noc_mcp.server"]   # TODO verify entry point once noc-mcp/server.py exists
-    env: {}                     # non-secret env only
-    # url: "https://REPLACE-internal-mcp-host/mcp"   # HTTP alternative
-    # headers: {}               # auth header via .env interpolation
+    # Default: noc-mcp runs as its own pod (deployment/k8s/noc-mcp.yaml) so backend credentials stay out of the Hermes pod.
+    url: "http://noc-mcp:8765/mcp"      # VERIFY the path your MCP SDK serves (streamable HTTP default is /mcp)
+    # Alternative (same host, stdio): Hermes spawns the server itself
+    # command: "python"
+    # args: ["/app/noc-mcp/server.py"]
+    # env: {NOC_MCP_CONFIG: "/config/backends.yaml"}
     enabled: true
     timeout: 120
     connect_timeout: 60
@@ -40,7 +40,7 @@ mcp_servers:
       # tools.include is the client-side allowlist (include wins over exclude).
       # Use ORIGINAL MCP tool names (Hermes registers them as mcp_noc_mcp_<tool>).
       include:
-        # Day-1 set for change-correlation + pipeline-walk + Jira. Replace with discovered names.
+        # All implemented in noc-mcp/tools (see `python noc-mcp/server.py --list`). add_investigation_comment is refused unless the server allows writes.
         - get_pipeline_map
         - get_hop_counts
         - get_rule
@@ -58,5 +58,6 @@ mcp_servers:
         - search_issues
         - get_issue
         - add_investigation_comment
+        - noc_mcp_health
       resources: false
       prompts: false

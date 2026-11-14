@@ -1,25 +1,78 @@
-"""noc-mcp tools: rules.
+"""Rule & configuration management tools (read-only)."""
+from __future__ import annotations
 
-Rule & configuration management system (read-only).
+from typing import Optional
 
-FOR THE LLM / DEVELOPER OPENING THIS FILE
-What to implement:
-  - get_rule(rule_id) -> definition, scope, owner, status, version
-  - get_rule_path(rule_id) -> servers, Kafka topics, services (cluster), enrichment sources that serve the rule
-  - get_rule_changes(rule_id=None, window) -> who/when/what diff, including overlapping and global config changes
-  - find_overlapping_rules(rule_id) -> rules whose scope intersects
-  - validate_rule_change(rule_id, proposed) -> validation result only if the system offers a dry-run API; never apply
-  - get_rule_kpis(rule_id, window) -> hermeticity and coupling series vs baseline (definitions in config/pipeline.yaml)
+from clients.prometheus import Prometheus, render
+from clients.rules import Rules
+from context import get_context
+from schemas.common import ToolError, iso, is_tbd, ok, parse_duration, window
+from tools._base import as_list, tool
 
-Rules for every tool in noc-mcp (see docs/tools-contract.md):
-  - Return the ToolResult envelope from schemas/common.py: ok, data, error, source, queried_at (UTC ISO), time_range, truncated.
-  - Never raise to the caller; map failures to an explicit error {code, message, retryable}.
-  - Every outbound call has a timeout and bounded result size (aggregate or paginate; the environment has ~100K series, never one request per series).
-  - Read-only unless the module says otherwise. Writes require a permission check (security/) and an audit record.
-  - No arbitrary command execution on production hosts, ever.
-  - Tool names must match noc-mcp/config/tool-contracts.yaml; if you rename one, update tool-contracts.yaml and tools.include in hermes-profile/config.yaml too.
 
-Ask Nir: does the rule system have an API with change history and dry-run? If not, read from its DB read-only. Never expose create/update/delete of rules.
+@tool("rules")
+def get_rule(rule_id: str) -> dict:
+    """Current definition of a rule from the rule & configuration management system (scope, status, owner, version)."""
+    return ok("rules", {"rule_id": rule_id, "rule": Rules(get_context()).rule(rule_id)})
 
-Acceptance: unit tests with mocked backends; no network in tests.
-"""
+
+@tool("rules")
+def get_rule_path(rule_id: str) -> dict:
+    """Which servers, Kafka topics/consumer groups, services (cluster/namespace/name), enrichment sources and Argo apps
+    serve this rule. Use it to scope get_hop_counts, get_server_drops, get_consumer_lag and change queries."""
+    path = Rules(get_context()).path(rule_id)
+    if path is None:
+        raise ToolError("not_found", f"no data-path mapping for rule '{rule_id}' (add it to rule-paths.yaml or the rules API)")
+    return ok("rules", {"rule_id": rule_id, "path": path})
+
+
+@tool("rules")
+def get_rule_changes(rule_id: Optional[str] = None, start: Optional[str] = None, end: Optional[str] = None) -> dict:
+    """Changes in the rule & configuration system in a window: the rule itself and global configuration.
+    Default window: last 24h. Use first in every investigation (change-correlation)."""
+    ctx = get_context()
+    tr = window(start, end, default_minutes=24 * 60)
+    rules = Rules(ctx)
+    data, notes = {}, []
+    if rule_id:
+        data["rule_changes"] = rules.changes(rule_id, iso(tr.start), iso(tr.end))
+    try:
+        data["global_changes"] = rules.changes(None, iso(tr.start), iso(tr.end))
+    except ToolError as e:
+        if e.code != "not_configured":
+            raise
+        notes.append("global configuration changes are not configured; only rule changes were checked")
+    if not data:
+        raise ToolError("bad_argument", "pass rule_id, or configure rules.global_changes_path")
+    return ok("rules", data, tr, notes=notes)
+
+
+@tool("prometheus")
+def get_rule_kpis(rule_id: str, kpis: str = "hermeticity,coupling", start: Optional[str] = None,
+                  end: Optional[str] = None, compare: str = "1d,7d") -> dict:
+    """Hermeticity and/or coupling of a rule over the window (downsampled series) plus the same value yesterday and last week.
+    Definitions come from the pipeline map. Use to confirm the symptom and find the real onset."""
+    ctx = get_context()
+    tr = window(start, end, default_minutes=6 * 60)
+    defs = ctx.pipeline.get("kpis") or {}
+    prom = Prometheus(ctx)
+    out, notes, src = {}, [], "prometheus"
+    step_range = "300s"
+    for k in as_list(kpis):
+        if k not in defs:
+            raise ToolError("bad_argument", f"unknown KPI '{k}'; known: {sorted(defs)}")
+        if is_tbd(defs[k].get("query")):
+            notes.append(f"{k}: query TBD in pipeline.yaml")
+            continue
+        series, src = prom.range(render(defs[k]["query"], rule_id=rule_id, range=step_range), tr.start, tr.end)
+        current_q = render(defs[k]["query"], rule_id=rule_id, range=tr.prom_range)
+        cur, _ = prom.instant(current_q, tr.end)
+        base = {}
+        for o in as_list(compare)[:3]:
+            b, _ = prom.instant(current_q, tr.end - parse_duration(o))
+            base[o] = b[0]["value"] if b else None
+        out[k] = {"definition": defs[k].get("definition"), "window_value": cur[0]["value"] if cur else None,
+                  "baselines": base, "series": series[:3]}
+    if not out:
+        raise ToolError("not_configured", "no KPI queries configured; " + "; ".join(notes))
+    return ok(src, {"rule_id": rule_id, "kpis": out}, tr, notes=notes)

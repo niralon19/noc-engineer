@@ -97,3 +97,39 @@ class Investigation:
         if self.status == InvestigationStatus.INVESTIGATION_INCOMPLETE and not self.missing_data:
             errors.append("missing_data required when incomplete")
         return errors
+
+
+def investigation_from_dict(d: dict) -> Investigation:
+    """Build an Investigation from the agent's JSON output (unknown keys ignored)."""
+    def loc(x: Optional[dict]) -> Optional[Location]:
+        if not x:
+            return None
+        return Location(**{k: x.get(k) for k in ("hop", "rule_id", "component", "provider", "service")},
+                        instances=list(x.get("instances") or []))
+
+    try:
+        status = InvestigationStatus(d["status"])
+    except (KeyError, ValueError) as e:
+        raise ValueError(f"invalid or missing status: {d.get('status')!r}") from e
+    return Investigation(
+        investigation_id=str(d.get("investigation_id") or ""),
+        source=str(d.get("source") or "unknown"),
+        fingerprint=str(d.get("fingerprint") or ""),
+        status=status,
+        headline=str(d.get("headline") or ""),
+        suspected_location=loc(d.get("suspected_location")),
+        onset_time=d.get("onset_time"),
+        impact=d.get("impact") or {},
+        candidates=[Candidate(loc(c.get("location")) or Location(), Verdict(c.get("verdict", "unknown")),
+                              list(c.get("evidence_for") or []), list(c.get("evidence_against") or []))
+                    for c in d.get("candidates") or []],
+        evidence=[Evidence(str(e.get("ref")), str(e.get("tool")), str(e.get("query", "")),
+                           e.get("time_range") or {}, str(e.get("observation", ""))) for e in d.get("evidence") or []],
+        ruled_out=d.get("ruled_out") or {},
+        next_check=d.get("next_check"),
+        missing_data=list(d.get("missing_data") or []),
+        related=list(d.get("related") or []),
+        recommended_actions=list(d.get("recommended_actions") or []),
+        jira_issue=d.get("jira_issue"),
+        created_at=str(d.get("created_at") or ""),
+    )

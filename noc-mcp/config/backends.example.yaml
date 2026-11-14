@@ -1,0 +1,90 @@
+# noc-mcp backends. Copy to config/backends.yaml (or point NOC_MCP_CONFIG at it). Read by OUR code only.
+# ${VAR} / ${VAR:-default} are taken from the environment (secrets stay in the k8s Secret / .env).
+# Anything left TBD makes the matching tool return error "not_configured" instead of guessing.
+
+http:
+  timeout_seconds: 20
+  verify_tls: true            # or a CA bundle path
+
+prometheus:
+  url: ${PROMETHEUS_URL}
+  token: ${PROMETHEUS_TOKEN:-}
+  local_retention_hours: 24   # older windows go to Thanos
+  max_series: 50
+thanos:
+  url: ${THANOS_URL:-}
+  token: ${THANOS_TOKEN:-}
+
+elasticsearch:                # ECK
+  url: ${ECK_URL}
+  user: ${ECK_USER:-}
+  password: ${ECK_PASSWORD:-}
+  default_index: TBD          # e.g. an index pattern for application logs
+  timestamp_field: "@timestamp"
+  max_hits: 50
+
+# Server-level measures (hop server_nic / capture_app). Templates: {instances} {range}. VERIFY metric names.
+server_queries:
+  rx_drops: TBD               # e.g. node_exporter: sum by (instance) (increase(node_network_receive_drop_total{instance=~"{instances}"}[{range}]))
+  rx_packets: TBD
+  capture_app_drops: TBD
+  cpu_softirq: TBD
+
+# Kafka (prefer exporter metrics in Prometheus). Templates: {group} {topic} {range}. VERIFY metric names.
+kafka_queries:
+  consumer_lag_by_partition: TBD   # e.g. kafka_exporter: sum by (topic, partition) (kafka_consumergroup_lag{consumergroup="{group}", topic=~"{topic}"})
+  produce_rate: TBD
+  consume_rate: TBD
+
+argocd:
+  url: ${ARGOCD_URL:-}
+  token: ${ARGOCD_TOKEN:-}
+  # Optional: rule/service -> Argo application names; otherwise the agent passes app names.
+  apps_by_service: {}
+
+kubernetes:                   # read-only service account per cluster
+  clusters:
+    openshift:
+      api_url: ${OPENSHIFT_API_URL:-}
+      token: ${OPENSHIFT_TOKEN:-}
+      verify_tls: true
+    rancher:
+      api_url: ${RANCHER_K8S_API_URL:-}
+      token: ${RANCHER_K8S_TOKEN:-}
+      verify_tls: true
+
+maintenance:
+  source: TBD                 # grafana_silences | jira | none
+  grafana_url: ${GRAFANA_URL:-}
+  grafana_token: ${GRAFANA_TOKEN:-}
+  jira_jql: TBD               # e.g. project = OPS AND type = Maintenance AND "Start" <= "{end}" AND "End" >= "{start}"
+
+# Rule & configuration management system. Paths are relative to base_url; placeholders in {braces}.
+# Response mapping uses dotted paths into the JSON (VERIFY against the real API).
+rules:
+  base_url: ${RULES_API_URL:-}
+  token: ${RULES_API_TOKEN:-}
+  get_rule_path: TBD          # e.g. /api/rules/{rule_id}
+  changes_path: TBD           # e.g. /api/rules/{rule_id}/history?from={start}&to={end}
+  global_changes_path: TBD    # e.g. /api/changes?from={start}&to={end}  (config changes not tied to one rule)
+  changes_list_field: items   # where the list is in the response ("" = response is the list)
+  change_fields: {time: changedAt, author: changedBy, summary: description, diff: diff, rule_id: ruleId}
+  # How a rule maps to the data path (servers / topics / services / enrichment). Either an API path...
+  rule_path_path: TBD         # e.g. /api/rules/{rule_id}/deployment
+  # ...or a static file (config/rule-paths.yaml) maintained by the team:
+  rule_paths_file: config/rule-paths.yaml
+
+jira:
+  url: ${JIRA_URL:-}
+  user: ${JIRA_USER:-}        # with api token -> basic auth; leave empty to use bearer PAT
+  token: ${JIRA_TOKEN:-}
+  max_results: 20
+  comment_marker: "noc-engineer"
+
+history:                      # investigation store; JSONL now, org Postgres later
+  backend: jsonl
+  path: ${NOC_HISTORY_PATH:-/data/noc-history/investigations.jsonl}
+
+security:
+  allow_writes: ${NOC_MCP_ALLOW_WRITES:-false}   # Jira comment only; true only for the bridge / interactive sessions
+  audit_log: ${NOC_MCP_AUDIT_LOG:-/data/noc-history/audit.jsonl}

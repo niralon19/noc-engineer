@@ -1,23 +1,39 @@
-"""noc-mcp tools: servers.
+"""Monitored capture servers: drops at NIC / kernel / capture application (read-only)."""
+from __future__ import annotations
 
-Monitored capture servers (read-only).
+import re
+from typing import Optional
 
-FOR THE LLM / DEVELOPER OPENING THIS FILE
-What to implement:
-  - get_server_traffic(servers, window) -> rx/tx rate, utilization
-  - get_server_drops(servers, window) -> NIC rx_dropped/missed, kernel drops, capture-app drops
-  - get_server_health(servers) -> CPU/softirq, memory, uptime, app status/version
-  - compare_servers(feed_or_group, metric, window) -> peer comparison
+from clients.prometheus import Prometheus, render, series_key
+from context import get_context
+from schemas.common import ToolError, is_tbd, ok, parse_duration, window
+from tools._base import as_list, tool
 
-Rules for every tool in noc-mcp (see docs/tools-contract.md):
-  - Return the ToolResult envelope from schemas/common.py: ok, data, error, source, queried_at (UTC ISO), time_range, truncated.
-  - Never raise to the caller; map failures to an explicit error {code, message, retryable}.
-  - Every outbound call has a timeout and bounded result size (aggregate or paginate; the environment has ~100K series, never one request per series).
-  - Read-only unless the module says otherwise. Writes require a permission check (security/) and an audit record.
-  - No arbitrary command execution on production hosts, ever.
-  - Tool names must match noc-mcp/config/tool-contracts.yaml; if you rename one, update tool-contracts.yaml and tools.include in hermes-profile/config.yaml too.
 
-Never reboot/restart. Drop counters are counters: return rates over the window.
-
-Acceptance: unit tests with mocked backends; no network in tests.
-"""
+@tool("prometheus")
+def get_server_drops(servers: list[str], start: Optional[str] = None, end: Optional[str] = None,
+                     compare: str = "1d") -> dict:
+    """Packet/record drops and load on the given servers for the window (NIC rx drops, capture-app drops, softirq...),
+    per server, with the same window at the comparison offset. Compare servers of the same feed: one server = local
+    problem; all servers = upstream/shared. Default window: last 60 minutes."""
+    ctx = get_context()
+    names = as_list(servers)
+    if not names:
+        raise ToolError("bad_argument", "pass at least one server (see get_rule_path)")
+    tr = window(start, end)
+    queries = {k: v for k, v in (ctx.section("server_queries") or {}).items() if not is_tbd(v)}
+    if not queries:
+        raise ToolError("not_configured", "server_queries are all TBD in backends config")
+    prom = Prometheus(ctx)
+    vals = {"instances": "|".join(re.escape(n) for n in names), "range": tr.prom_range}
+    out, src = {}, "prometheus"
+    for name, tmpl in queries.items():
+        q = render(tmpl, **vals)
+        cur, src = prom.instant(q, tr.end)
+        base = {}
+        for o in as_list(compare)[:2]:
+            b, _ = prom.instant(q, tr.end - parse_duration(o))
+            base[o] = {series_key(s["labels"]): s["value"] for s in b}
+        out[name] = {"query": q, "by_server": {series_key(s["labels"]): s["value"] for s in cur}, "baselines": base}
+    missing = [k for k, v in (ctx.section("server_queries") or {}).items() if is_tbd(v)]
+    return ok(src, {"servers": names, "measures": out}, tr, notes=[f"not configured: {missing}"] if missing else [])

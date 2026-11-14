@@ -25,10 +25,16 @@ kind: Kustomization
 namespace: TBD-noc-engineer
 resources:
   - hermes.yaml
+  - noc-mcp.yaml
 configMapGenerator:
   - name: hermes-profile
     files:
 {lines}
+  - name: noc-mcp-config
+    files:
+      - backends.yaml=../../noc-mcp/config/backends.example.yaml   # TBD: point at the real (private) backends.yaml
+      - pipeline.yaml=../../noc-mcp/config/pipeline.yaml
+      - rule-paths.yaml=../../noc-mcp/config/rule-paths.example.yaml
 """
 
 

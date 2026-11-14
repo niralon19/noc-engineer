@@ -1,65 +1,72 @@
-# Read by OUR code (noc-mcp pipeline tools, anomaly engine, Investigation.validate). Not read by Hermes.
-# The data path from incoming traffic to output. Every hop must expose an IN and OUT count
-# (per rule where possible) so the agent can find the FIRST hop where counts diverge.
+# Read by OUR code (noc-mcp: get_pipeline_map, get_hop_counts, get_rule_kpis; anomaly engine; Investigation.validate).
+# Not read by Hermes. The data path from incoming traffic to output.
 #
-# STATUS: PROPOSED DEFAULT - Nir verifies/edits at work. Replace every TBD. Do not commit
-# hostnames, IPs or internal metric names if the repo is not private.
+# Each hop has PromQL TEMPLATES that return a COUNT over the window, ideally one series per instance:
+#   placeholders: {rule_id}  {instances}  (regex of servers/pods/partitions, ".*" if none)  {range} (e.g. 1800s)
+#   example shape (VERIFY real metric names):  sum by (instance) (increase(SOME_COUNTER{instance=~"{instances}"}[{range}]))
+# Queries left as TBD make get_hop_counts return error "hop_not_instrumented" for that measure (never zero).
+# per_rule: true  -> templates use {rule_id};  false -> the hop is scoped by {instances} (servers/topics serving the rule).
+#
+# STATUS: PROPOSED DEFAULT - Nir verifies/edits at work. Replace every TBD. Do not commit hostnames,
+# IPs or internal metric names while the repo is public.
 verified: false
 hops:
   - id: ingress_traffic
     description: Traffic arriving at the monitored servers (switch/port mirror/tap)
-    in_metric: TBD
-    out_metric: TBD
+    in_query: TBD
+    out_query: TBD
     per_rule: false
   - id: server_nic
     description: Server network interface (rx packets, rx_dropped, ring buffer)
-    in_metric: TBD
-    out_metric: TBD
-    drop_metric: TBD
+    in_query: TBD
+    out_query: TBD
+    drop_query: TBD
     per_rule: false
   - id: capture_app
     description: Capture/processing application running on the server
-    in_metric: TBD
-    out_metric: TBD
-    drop_metric: TBD
+    in_query: TBD
+    out_query: TBD
+    drop_query: TBD
     per_rule: TBD
   - id: kafka_ingest
     description: Kafka topic(s) the servers produce to
-    in_metric: TBD        # produce rate
-    out_metric: TBD       # consume rate
-    lag_metric: TBD       # consumer group lag
+    in_query: TBD        # produce rate
+    out_query: TBD       # consume rate
+    lag_query: TBD       # consumer group lag
     per_rule: TBD
   - id: stream_processing
     description: Processing services in the Kubernetes cluster (Rancher/OpenShift)
-    in_metric: TBD
-    out_metric: TBD
+    in_query: TBD
+    out_query: TBD
     per_rule: TBD
   - id: internal_enrichment
     description: Internal organizational enrichment (coupling)
-    in_metric: TBD
-    matched_metric: TBD   # records successfully coupled
+    in_query: TBD
+    matched_query: TBD   # records successfully coupled
     per_rule: true
   - id: rule_matching
     description: Rule evaluation using the rule & configuration management system
-    in_metric: TBD
-    matched_metric: TBD   # hermeticity numerator
+    in_query: TBD
+    matched_query: TBD   # hermeticity numerator
     per_rule: true
   - id: storage_postgres
     description: Results/state in Postgres
-    in_metric: TBD
+    in_query: TBD
     per_rule: TBD
   - id: storage_eck
     description: Records/logs indexed in ECK (Elasticsearch)
-    in_metric: TBD
+    in_query: TBD
     per_rule: TBD
   - id: output
     description: What the customer sees / exported result
-    in_metric: TBD
+    in_query: TBD
     per_rule: true
-kpis:
+kpis:                     # used by get_rule_kpis; each query returns a 0..1 (or %) value for the rule over {range}
   hermeticity:
     definition: TBD        # e.g. matched / expected traffic for the rule, measured at hop X
-    measured_at: TBD
+    measured_at: TBD       # hop id
+    query: TBD             # PromQL template with {rule_id} and {range}
   coupling:
     definition: TBD        # e.g. records coupled with internal enrichment / records eligible
     measured_at: TBD
+    query: TBD
