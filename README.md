@@ -1,36 +1,46 @@
-# Hermes NOC — Autonomous Operations Engineer
+# noc-engineer — Hermes NOC Engineer
 
-Single primary Hermes agent for on-prem NOC investigation, early anomaly detection, operational coordination and reporting.
+Single primary Hermes agent (profile `noc-engineer`) for on-prem NOC investigation, early anomaly detection, Jira coordination and a daily report. Runs in Docker, read-only by default.
 
 ## Architecture
-- Hermes is the only agent and owns reasoning, skill selection, investigation, recommendations and workflow decisions.
-- Existing internal MCP server is the tool-access layer. No second MCP server is created here.
-- Python anomaly engine performs deterministic/statistical detection outside the LLM path and publishes normalized events.
-- RabbitMQ transports events/workflow messages; PostgreSQL stores incidents, investigation state, evidence references and operational memory.
-- Jira enters through webhook plus bounded polling reconciliation. Slack is for notifications/updates; Web Chat remains the primary interactive channel.
+- **Hermes = brain**, **Skills = methodology**, **MCP = tool access**. One agent, seven skills, one MCP layer. No multi-agent, no CrewAI as a permanent layer.
+- The Python anomaly engine does deterministic/statistical detection outside the LLM path and emits normalized events. Hermes does correlation, explanation and RCA.
+- Jira enters via webhook plus bounded polling. Web chat is primary; Slack is for notifications.
+- PostgreSQL/RabbitMQ are **optional** (`--profile optional`) and not needed to start.
 
 ## Repository map
-`profile/` agent identity; `skills/` seven specializations; `mcp/` tool contracts and allowlist; `workflows/` incident lifecycle and event flows; `cron/` six scheduled jobs; `config/` runtime and detection configuration; `memory/` persistent memory schema; `tests/` architecture contracts.
+| Path | Purpose |
+|---|---|
+| `hermes-profile/` | Version-controlled mirror of `HERMES_HOME`: `SOUL.md`, `config.yaml`, `skills/<name>/SKILL.md` |
+| `noc-mcp/` | MCP server code, tool contracts and allowlist (`config/`), result schemas |
+| `anomaly-engine/` | Deterministic detection (`anomaly_engine.py`, rules, baselines) |
+| `event-ingestion/` | Grafana/Jira webhooks and polling (reuse the existing Grafana→Jira agent) |
+| `reporting/` | Daily NOC report |
+| `workflows/` | Declarative specs: incident lifecycle, Jira intake, event schema |
+| `deployment/` | Compose, `.env.example`, cron job specs, example settings, optional Postgres schema |
+| `docs/` | Architecture, tools contract, investigation flow, security, runbooks |
+| `tests/` | Architecture contracts and anomaly-engine tests (`pytest tests`) |
 
-## Cron design
-Data Quality Scan `*/15 * * * *`; Enrichment Audit `*/30 * * * *`; Anomaly Baseline `0 * * * *`; Jira Polling Backup `*/2 * * * *`; NOC Daily Report `0 7 * * *`; Housekeeping `0 2 * * *`. Timezone is explicitly configured (example: Asia/Jerusalem). These are job specifications, not enabled schedules until installed in Hermes Cron or one approved scheduler.
+## Deploying the profile
+`hermes-profile/` is the source of truth; sync its contents into the real `HERMES_HOME` (usually `~/.hermes/profiles/noc-engineer/`) with a script. Do not use a bare symlink (Hermes may silently fall back to the default profile). Change settings with `hermes config set`, not by hand-editing `config.yaml` on the live host. Verify the path in your Docker image.
 
-## Start supporting services
+## Cron
+Job specs live in `deployment/cron/` (data-quality `*/15`, enrichment `*/30`, baseline `0 *`, Jira polling `*/2`, daily report `0 7`, housekeeping `0 2`; timezone `Asia/Jerusalem`). They are specs, not enabled schedules. Register each in exactly one scheduler. Deterministic checks run as plain Python, not through the LLM.
+
+## Start order
+0. **Day 0:** test the local LLM on a synthetic multi-step tool-calling investigation. If it fails, nothing else matters.
+1. Profile + `SOUL.md` + 3 core skills (observability, investigation, ITSM) + MCP with ~8 read-only tools; one real investigation.
+2. Evaluation set: 20–30 resolved historical alerts with known root cause.
+3. Webhook/polling intake, dedup, history.
+4. Proactive monitoring (anomaly engine), data quality, enrichment.
+5. Cron, daily report, SLA tracking.
+6. Hardening: permissions, failure tests, idempotency, Hermes-vs-CrewAI comparison.
+
+## Optional services
 ```bash
-cp .env.example .env
-# Replace all example passwords before use
-docker compose up -d
+cp deployment/.env.example deployment/.env   # replace all passwords
+docker compose -f deployment/docker-compose.yml --profile optional up -d
 ```
-This starts PostgreSQL and RabbitMQ only. It does not install Hermes or connect to internal MCP, Prometheus/Thanos, Grafana, Loki/ECK, Jira or Slack.
 
-## Integration sequence
-1. Inspect the installed Hermes version and profile layout; merge `profile/` configuration without overwriting existing config.
-2. Discover actual internal MCP tool names/schemas. Populate `mcp/allowlist.example.yaml` with verified names; default deny.
-3. Decide whether metrics collection uses a read-only Prometheus/Thanos API or MCP batch tools. Do not issue one request per series; benchmark bounded batches for the ~100K-series environment.
-4. Implement/enable Python detector, RabbitMQ publisher/consumer, idempotency, retry and DLQ.
-5. Configure Jira webhook signature verification and polling cursor; connect Slack notification adapter.
-6. Register Cron jobs with one scheduler only; verify timezone and delivery destinations.
-7. Load test, test failure/recovery, backups, audit and approval controls before production.
-
-## Production status
-This repository is an implementation scaffold with explicit contracts and schedules, not a production-ready deployment. MCP endpoint/tool schemas, Jira project/workflow, Slack workspace, Hermes version, Prometheus limits, identity provider, secrets manager and operational runbooks must be supplied by the environment owner. Do not commit internal addresses, topology, logs or credentials. Keep the repository private before adding environment-specific data.
+## Status
+Scaffold with explicit contracts, not production-ready. MCP tool names/schemas, Jira workflow, Slack, Hermes version, Prometheus limits and secrets management must come from the environment owner. Keep this repository **private**; never commit internal addresses, topology, logs or credentials.

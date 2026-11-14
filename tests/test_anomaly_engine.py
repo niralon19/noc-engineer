@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import pytest
-from workflows.anomaly_engine import Rule, Sample, evaluate
+from anomaly_engine import Rule, Sample, evaluate
 
 def test_rule_emits_stable_event_id():
     sample = Sample("latency", "api-a", 3.0, datetime(2026, 1, 1, tzinfo=timezone.utc))
