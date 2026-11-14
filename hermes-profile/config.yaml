@@ -1,0 +1,7 @@
+# Hermes profile config for noc-engineer.
+# Verify real keys against the Hermes docs before deploying.
+mcp_servers:
+  noc-mcp:
+    # TODO: transport/command/url for noc-mcp
+    # TODO: tool allow-list (start with ~8 read-only tools + jira comment/create)
+    {}
