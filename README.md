@@ -11,7 +11,7 @@ Single Hermes agent (profile `noc-engineer`) that replaces the CrewAI pipeline (
 | Early detection | cron `proactive-review` (anomaly engine script -> agent) | `proactive-review` |
 | On-call morning report | cron `oncall-report` 07:00 | `oncall-report` |
 
-Domain skills: `traffic-hermetic`, `coupling`, `coatr`. Supporting skills: `observability-queries`, `network-engineering`, `openshift-operations`, `jira-operations`. Every investigation must locate the problem (`suspected_location`, `onset_time`, `ruled_out`, `next_check`); see `noc-mcp/schemas/investigation.py`.
+Domain skills: `traffic-hermetic`, `coupling`, `coatr`. Supporting skills: `observability-queries`, `network-engineering`, `openshift-operations`, `jira-operations`, `enrichment-quality`. Every investigation must locate the problem (`suspected_location`, `onset_time`, `ruled_out`, `next_check`); see `noc-mcp/schemas/investigation.py`.
 
 ## Architecture
 - **Hermes = brain**, **Skills = methodology**, **MCP = tool access**. One agent, seven skills, one MCP layer. No multi-agent, no CrewAI as a permanent layer.

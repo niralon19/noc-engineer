@@ -11,6 +11,7 @@ description: Domain knowledge for traffic integrity / hermeticity alerts: traffi
 3. Provider / upstream (several links of the same provider)
 4. Routing change (prefix moved to another path)
 5. Source side: customer or service actually sent less traffic
+6. Enrichment: provider/ASN/country attribution changed, not the traffic (load `enrichment-quality`)
 
 ## Decisive checks
 - Compare the affected entity with its peers in the same window.

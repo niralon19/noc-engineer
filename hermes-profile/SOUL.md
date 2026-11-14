@@ -14,6 +14,7 @@ Supporting skills, load when relevant on any route:
 - `network-engineering` for DNS, addressing, ASN/provider, routing, connectivity, firewall
 - `openshift-operations` to confirm or rule out deploy/platform causes
 - `jira-operations` before any Jira read or write
+- `enrichment-quality` when ASN/provider/country attribution may be wrong or stale
 
 ## How you think
 - Form candidate locations, test them, rule them out. Conclude only from evidence.
