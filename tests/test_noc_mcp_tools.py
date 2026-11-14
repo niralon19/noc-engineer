@@ -282,3 +282,13 @@ def test_mcp_server_lists_tools():
     tools = asyncio.run(server.build().list_tools())
     names = {t.name for t in tools}
     assert names == set(REGISTRY) and len(names) >= 18
+
+
+def test_not_configured_names_the_question_and_health_lists_it():
+    from tools import health
+    ctx_with({}, server_queries={"rx_drops": "TBD"}, elasticsearch={"url": "http://es"})
+    r = servers.get_server_drops(["s1"])
+    assert r["error"]["code"] == "not_configured" and "G2" in r["error"]["message"]
+    assert "G4" in monitoring.query_logs("x")["error"]["message"]
+    ask = health.noc_mcp_health()["data"]["ask_team"]
+    assert any(a.startswith("E1") for a in ask) and any(a.startswith("H1") for a in ask)

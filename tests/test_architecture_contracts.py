@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -163,3 +164,20 @@ def test_orientation_docs_present():
     assert "## North star" in claude and "docs/STATUS.md" in claude and "docs/decisions.md" in claude
     assert (ROOT / "CLAUDE.md").read_text() == (ROOT / "AGENTS.md").read_text()
     assert "SUPERSEDED" in (ROOT / "docs" / "project-map.he.md").read_text()[:200]
+
+
+def test_open_items_scanner_and_questionnaire_agree():
+    import subprocess
+    r = subprocess.run(["python3", str(ROOT / "scripts" / "open_items.py"), "--json"], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    items = json.loads(r.stdout)
+    assert items and all(i["question"] != "(missing from OPEN-QUESTIONS.md)" for i in items)
+    ids = {i["id"] for i in items}
+    assert {"B2", "E1", "E2", "F1"} <= ids          # known open facts are reported with evidence
+    assert any(i["evidence"] for i in items if i["id"] == "E2")
+
+
+def test_claude_md_has_ask_protocol_and_soul_asks():
+    claude = (ROOT / "CLAUDE.md").read_text()
+    assert "scripts/open_items.py" in claude and "Never invent" in claude
+    assert "## When information is missing" in (ROOT / "hermes-profile" / "SOUL.md").read_text()

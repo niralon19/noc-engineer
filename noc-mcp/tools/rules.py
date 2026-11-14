@@ -6,7 +6,7 @@ from typing import Optional
 from clients.prometheus import Prometheus, render
 from clients.rules import Rules
 from context import get_context
-from schemas.common import ToolError, iso, is_tbd, ok, parse_duration, window
+from schemas.common import ToolError, iso, is_tbd, not_configured, ok, parse_duration, window
 from tools._base import as_list, tool
 
 
@@ -74,5 +74,5 @@ def get_rule_kpis(rule_id: str, kpis: str = "hermeticity,coupling", start: Optio
         out[k] = {"definition": defs[k].get("definition"), "window_value": cur[0]["value"] if cur else None,
                   "baselines": base, "series": series[:3]}
     if not out:
-        raise ToolError("not_configured", "no KPI queries configured; " + "; ".join(notes))
+        raise not_configured("kpis (" + "; ".join(notes) + ")")
     return ok(src, {"rule_id": rule_id, "kpis": out}, tr, notes=notes)

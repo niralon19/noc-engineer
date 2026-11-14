@@ -6,7 +6,7 @@ from typing import Optional
 from clients.eck import Elastic
 from clients.prometheus import Prometheus
 from context import get_context
-from schemas.common import ToolError, is_tbd, ok, window
+from schemas.common import is_tbd, not_configured, ok, window
 from tools._base import tool
 
 
@@ -37,7 +37,7 @@ def query_logs(query: str, index: Optional[str] = None, start: Optional[str] = N
     cfg = ctx.section("elasticsearch")
     idx = index or cfg.get("default_index")
     if is_tbd(idx):
-        raise ToolError("not_configured", "pass index, or set elasticsearch.default_index")
+        raise not_configured("elasticsearch.default_index (or pass index)")
     tr = window(start, end)
     size = max(0, min(int(size), int(cfg.get("max_hits", 50))))
     body = Elastic(ctx).search(idx, query, tr, size, group_by)

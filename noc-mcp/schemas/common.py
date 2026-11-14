@@ -22,8 +22,24 @@ class ToolError(Exception):
         self.code, self.message, self.retryable = code, message, retryable
 
 
+# config key prefix -> question ID in docs/OPEN-QUESTIONS.md (so the agent can ask for exactly the right thing)
+QUESTION_FOR = {
+    "prometheus": "G1", "thanos": "G1", "elasticsearch": "G4", "argocd": "G5", "kubernetes": "G6",
+    "maintenance": "G7", "rules.get_rule_path": "F1", "rules.changes_path": "F2", "rules.global_changes_path": "F2",
+    "rules.rule_path_path": "F3", "rules": "F1", "jira": "H1", "server_queries": "G2", "kafka_queries": "G3",
+    "pipeline": "E2", "kpis": "E3",
+}
+
+
+def question_for(key: str) -> str:
+    best = max((k for k in QUESTION_FOR if key.startswith(k)), key=len, default=None)
+    return QUESTION_FOR[best] if best else "?"
+
+
 def not_configured(what: str) -> ToolError:
-    return ToolError("not_configured", f"{what} is not configured (TBD in noc-mcp config). Ask the NOC team to fill it.")
+    q = question_for(what)
+    return ToolError("not_configured", f"{what} is not configured yet (open question {q}). Do not guess: tell the user "
+                                       f"exactly what is missing and ask the NOC team owner to provide it.")
 
 
 @dataclass

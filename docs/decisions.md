@@ -13,4 +13,5 @@
 | 9 | Reuse org infra: Kafka, org Postgres, Argo CD on OpenShift/Rancher | Already operated by the team | RabbitMQ, new databases, docker-compose in production |
 | 10 | Kimi K3 via OpenAI-compatible custom provider | Strong tool calling / long tasks; DeepSeek R1-class models cannot call tools | R1 / small distills |
 | 11 | Cron via `hermes cron create` (jobs.json), never YAML | That is how Hermes works; YAML specs were not read by anything | Cron YAML files |
+| 13 | Missing facts are asked, never guessed: one questionnaire (`docs/OPEN-QUESTIONS.md`) + scanner, question IDs surfaced by tools at runtime | Plausible guesses about the environment were the main risk of an LLM-built repo | Filling TBDs with "typical" values |
 | 12 | Migration by shadow mode, not big bang | Prove Hermes locates better than CrewAI on the same alerts before switching Jira ownership | Turning CrewAI off first |

@@ -10,9 +10,11 @@
 - [x] Cron: `install-cron.sh` (profile-aware, skips stub scripts), prompts for oncall-report and proactive-review
 - [x] Deployment: k8s Hermes (gateway, PVC, Service/Route, profile init container) + noc-mcp pod + NetworkPolicy + Argo Application; `day0-check.sh`
 - [x] Web app chat example (`examples/web-app/`), Hebrew docs (guide, what-is-Hermes)
-- [x] 49 tests passing
+- [x] Ask-Nir mechanism: `docs/OPEN-QUESTIONS.md` (43 questions) + `scripts/open_items.py` scanner + mandatory protocol in CLAUDE.md; runtime: tools/health name the question ID, SOUL tells Hermes to ask instead of guessing
+- [x] Tests passing (`python3 -m pytest -q tests`)
 
 ## Waiting for Nir at work (blocks real investigations)
+Full, current list with question IDs: `python3 scripts/open_items.py` / `docs/OPEN-QUESTIONS.md`. Summary:
 - [ ] Make the repo private / move to the org git
 - [ ] `noc-mcp/config/backends.yaml`: URLs, secrets via env, server/Kafka PromQL templates, rules API paths, maintenance source
 - [ ] `noc-mcp/config/pipeline.yaml`: real hops, `in_query`/`out_query` per hop, hermeticity/coupling KPI queries, then `verified: true`

@@ -6,7 +6,7 @@ from typing import Optional
 
 from clients.prometheus import Prometheus, render, series_key
 from context import get_context
-from schemas.common import ToolError, is_tbd, ok, parse_duration, window
+from schemas.common import ToolError, is_tbd, not_configured, ok, parse_duration, window
 from tools._base import as_list, tool
 
 
@@ -23,7 +23,7 @@ def get_server_drops(servers: list[str], start: Optional[str] = None, end: Optio
     tr = window(start, end)
     queries = {k: v for k, v in (ctx.section("server_queries") or {}).items() if not is_tbd(v)}
     if not queries:
-        raise ToolError("not_configured", "server_queries are all TBD in backends config")
+        raise not_configured("server_queries")
     prom = Prometheus(ctx)
     vals = {"instances": "|".join(re.escape(n) for n in names), "range": tr.prom_range}
     out, src = {}, "prometheus"

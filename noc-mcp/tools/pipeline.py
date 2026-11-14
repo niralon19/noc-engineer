@@ -69,8 +69,9 @@ def get_hop_counts(hop: str, rule_id: Optional[str] = None, instances: Optional[
         measures[m] = entry
 
     if not measures:
-        raise ToolError("hop_not_instrumented", f"hop '{hop}' has no configured queries (TBD in pipeline.yaml): "
-                                                "report it as missing_data, not as healthy")
+        raise ToolError("hop_not_instrumented", f"hop '{hop}' has no configured queries yet (open question E2): "
+                                                "report it as missing_data, not as healthy, and tell the user which "
+                                                "hop measurement is missing so the NOC team can provide it")
     data = {"hop": hop, "scope": {"rule_id": rule_id, "instances": inst or "all"}, "measures": measures,
             "derived": _derive(measures, [o for o, _ in offsets])}
     notes = [f"not instrumented at this hop: {', '.join(missing)}"] if missing else []

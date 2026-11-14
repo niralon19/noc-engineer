@@ -5,7 +5,7 @@ from typing import Optional
 
 from clients.prometheus import Prometheus, render
 from context import get_context
-from schemas.common import ToolError, is_tbd, ok, window
+from schemas.common import is_tbd, not_configured, ok, window
 from tools._base import tool
 
 
@@ -16,7 +16,7 @@ def get_consumer_lag(group: str, topic: str = ".*", start: Optional[str] = None,
     ctx = get_context()
     tmpl = (ctx.section("kafka_queries") or {}).get("consumer_lag_by_partition")
     if is_tbd(tmpl):
-        raise ToolError("not_configured", "kafka_queries.consumer_lag_by_partition is TBD")
+        raise not_configured("kafka_queries.consumer_lag_by_partition")
     tr = window(start, end)
     series, src = Prometheus(ctx).range(render(tmpl, group=group, topic=topic, range=tr.prom_range), tr.start, tr.end)
     parts = []
