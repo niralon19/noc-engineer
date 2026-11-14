@@ -1,3 +1,6 @@
+> **SUPERSEDED (historical).** המסמך הזה הוא התכנון הראשוני. כמה מההחלטות בו בוטלו: 7 skills גנריים, RabbitMQ ו-PostgreSQL מההתחלה, Docker במקום Argo, ו-confidence מספרי.
+> **המצב הנוכחי:** `docs/STATUS.md`. **ההחלטות:** `docs/decisions.md`. **המדריך:** `docs/מדריך-הפרויקט.md`.
+
 מפת הפרויקט: Hermes NOC Engineer
 
 המטרה היא לבנות Agent אחד בשם noc-engineer, שרץ On-Prem בתוך סביבת Docker, מכיר את מערכות התשתית שלך, מנטר מגמות ואנומליות, חוקר תקלות, עובד מול Jira ומפיק דוח NOC יומי.

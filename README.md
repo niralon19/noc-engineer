@@ -72,4 +72,4 @@ docker compose -f deployment/docker-compose.yml --profile optional up -d   # loc
 ```
 
 ## Status
-Scaffold with explicit contracts, not production-ready. MCP tool names/schemas, Jira workflow, Slack, Hermes version, Prometheus limits and secrets management must come from the environment owner. Keep this repository **private**; never commit internal addresses, topology, logs or credentials.
+See `docs/STATUS.md` (done / waiting for environment data / next / success criteria) and `docs/decisions.md`. Keep this repository **private**; never commit internal addresses, topology, logs or credentials.

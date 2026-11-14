@@ -156,3 +156,10 @@ def test_profile_init_unflattens_and_prunes(tmp_path):
     assert r.returncode == 0, r.stderr
     names = {p.name for p in (home / "skills").iterdir()}
     assert "old" not in names and "agent-made" in names and set(SKILLS) <= names
+
+
+def test_orientation_docs_present():
+    claude = (ROOT / "CLAUDE.md").read_text()
+    assert "## North star" in claude and "docs/STATUS.md" in claude and "docs/decisions.md" in claude
+    assert (ROOT / "CLAUDE.md").read_text() == (ROOT / "AGENTS.md").read_text()
+    assert "SUPERSEDED" in (ROOT / "docs" / "project-map.he.md").read_text()[:200]
