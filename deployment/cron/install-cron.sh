@@ -25,7 +25,7 @@ job_script enrichment-audit     "*/30 * * * *" enrichment_audit.py
 job_script anomaly-baseline     "0 * * * *"    anomaly_baseline.py
 job_script jira-polling-backup  "*/2 * * * *"  jira_poll.py
 job_script housekeeping         "0 2 * * *"    housekeeping.py
-job_agent  proactive-review     "*/15 * * * *" proactive-review.md anomaly_scan.py proactive-review alert-investigation traffic-hermetic coupling coatr
-job_agent  oncall-report        "0 7 * * *"    oncall-report.md    -               oncall-report
+job_agent  proactive-review     "*/15 * * * *" proactive-review.md anomaly_scan.py proactive-review alert-investigation observability-queries
+job_agent  oncall-report        "0 7 * * *"    oncall-report.md    -               oncall-report jira-operations observability-queries
 
 "$HERMES" cron list

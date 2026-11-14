@@ -8,7 +8,7 @@ description: Investigate a new alert (Grafana or anomaly engine) and locate wher
 Goal: say WHERE the problem is (component, layer, provider/link, service, time it started) with evidence, not a summary of tool outputs.
 
 ## Protocol
-1. **Frame.** From the alert: service, entity (host/link/provider/customer), metric, value vs threshold, start time. Load the matching domain skill: `traffic-hermetic`, `coupling` or `coatr` (more than one if the symptom crosses domains).
+1. **Frame.** From the alert: service, entity (host/link/provider/customer), metric, value vs threshold, start time. Load the matching domain skill: `traffic-hermetic`, `coupling` or `coatr` (more than one if the symptom crosses domains). Load `observability-queries` before querying; add `network-engineering` or `openshift-operations` when a candidate is in those layers.
 2. **Scope the impact.** Is it one entity or many? One provider/region/service or all? Query the same metric across peers. Wide impact points upstream (shared dependency); narrow impact points to the entity itself.
 3. **Find the onset.** Query the window from 2h before to now. Determine when it really started (often earlier than the alert). Note anything else that changed at that time (deploys, config, other alerts).
 4. **List candidate locations** (2–5), from the domain skill's layer list. For each, write what evidence would confirm or rule it out.
@@ -19,7 +19,7 @@ Goal: say WHERE the problem is (component, layer, provider/link, service, time i
    - HIGH_CONFIDENCE: one location is strongly supported, some alternatives not yet ruled out.
    - INCONCLUSIVE: no location fits; give the single most useful next check.
    - INVESTIGATION_INCOMPLETE: a required tool/system failed; say which.
-8. **Act.** Search Jira for an open issue on the same fingerprint before anything else. If found: add a comment. If not: create a task only if the route policy allows it; otherwise return the result.
+8. **Act.** Follow `jira-operations`. Search Jira for an open issue on the same fingerprint before anything else. If found: add a comment. If not: create a task only if the route policy allows it; otherwise return the result.
 
 ## Rules
 - Stop after ~12 tool calls without progress and conclude INCONCLUSIVE with next_check.

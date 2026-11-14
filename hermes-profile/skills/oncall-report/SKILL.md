@@ -15,3 +15,5 @@ Sections, in order:
 5. **Data/tool health:** systems the agent could not query; stale data.
 
 Rules: VERIFIED and SUSPECTED must be clearly separated. Every item has a Jira key, investigation id or query reference. No changes to Jira or production. If a section is empty, write "none".
+
+Use `jira-operations` for all Jira reads and writes.

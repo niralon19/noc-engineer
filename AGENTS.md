@@ -23,7 +23,7 @@ If a fact is missing, ASK before coding. Never invent: MCP tool names/schemas, H
 
 ## Build order
 Migration from the CrewAI project `crew-network` (real code lives in Nir's WORK repo, not on GitHub: do not copy work code into this repo). Follow `docs/migration-from-crewai.md`.
-Routes: alert, customer ticket, user question, proactive review, on-call report. Skills: 5 route skills + 3 domain skills (traffic-hermetic, coupling, coatr). Domain "Environment knowledge" sections are filled ONLY from Nir/the team.
+Routes: alert, customer ticket, user question, proactive review, on-call report. Skills: 5 route + 3 domain (traffic-hermetic, coupling, coatr) + 4 supporting (observability-queries, network-engineering, openshift-operations, jira-operations). Domain "Environment knowledge" sections are filled ONLY from Nir/the team.
 Model: Kimi K3 (OpenAI-compatible). Use lower reasoning_effort for cron/questions, max for alert investigation.
 
 ## What Hermes actually reads (see docs/hermes-mapping.md)

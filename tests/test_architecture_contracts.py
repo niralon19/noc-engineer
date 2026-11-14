@@ -3,7 +3,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ROUTE_SKILLS = ["alert-investigation", "customer-ticket", "user-question", "proactive-review", "oncall-report"]
 DOMAIN_SKILLS = ["traffic-hermetic", "coupling", "coatr"]
-SKILLS = ROUTE_SKILLS + DOMAIN_SKILLS
+SUPPORT_SKILLS = ["observability-queries", "network-engineering", "openshift-operations", "jira-operations"]
+SKILLS = ROUTE_SKILLS + DOMAIN_SKILLS + SUPPORT_SKILLS
 CRON = {"data-quality-scan.yaml", "enrichment-audit.yaml", "anomaly-baseline.yaml",
         "jira-polling.yaml", "noc-daily-report.yaml", "housekeeping.yaml"}
 
