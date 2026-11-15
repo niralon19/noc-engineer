@@ -29,4 +29,4 @@ find "$DEST/scripts" -name "__pycache__" -prune -exec rm -rf {} +
 echo "Synced SOUL.md, skills/, scripts/ -> $DEST"
 # config.yaml: seed if missing; otherwise show (or with --apply-config, apply) a merge of the managed keys only.
 python3 "$(dirname "$0")/merge_config.py" "$SRC/config.yaml" "$DEST/config.yaml" ${APPLY_CONFIG:-$( [ -f "$DEST/config.yaml" ] || echo --apply )}
-echo "Next: merge mcp_servers from hermes-profile/config.yaml, then: deployment/day0-check.sh --profile $PROFILE"
+echo "Next: fill model/MCP values in $DEST/config.yaml (or re-run with --apply-config), then: deployment/day0-check.sh --profile $PROFILE"
