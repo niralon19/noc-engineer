@@ -1,6 +1,6 @@
 ---
 name: traffic-hermetic
-description: Rule hermeticity problems: a rule does not capture all the traffic it should (or captures traffic it should not).
+description: "Rule hermeticity problems: a rule does not capture all the traffic it should (or captures traffic it should not)."
 ---
 
 # Hermeticity

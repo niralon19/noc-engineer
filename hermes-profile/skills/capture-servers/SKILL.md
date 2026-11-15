@@ -1,6 +1,6 @@
 ---
 name: capture-servers
-description: Monitored servers receiving traffic: maintenance/upgrades, packet loss, traffic load, NIC/kernel/application drops, load balance between servers.
+description: "Monitored servers receiving traffic: maintenance/upgrades, packet loss, traffic load, NIC/kernel/application drops, load balance between servers."
 ---
 
 # Capture servers

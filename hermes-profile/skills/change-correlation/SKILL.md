@@ -1,6 +1,6 @@
 ---
 name: change-correlation
-description: Find what changed around the onset: rule/configuration changes, Argo syncs, deployments, server maintenance/upgrades. Run first in every investigation.
+description: "Find what changed around the onset: rule/configuration changes, Argo syncs, deployments, server maintenance/upgrades. Run first in every investigation."
 ---
 
 # Change correlation (step 0)

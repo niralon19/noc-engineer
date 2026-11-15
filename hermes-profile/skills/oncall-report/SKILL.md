@@ -1,6 +1,6 @@
 ---
 name: oncall-report
-description: Produce the morning report for the on-call engineer: last 24h incidents, open issues, recurring problems, risks and what needs action today.
+description: "Produce the morning report for the on-call engineer: last 24h incidents, open issues, recurring problems, risks and what needs action today."
 ---
 
 # On-call morning report

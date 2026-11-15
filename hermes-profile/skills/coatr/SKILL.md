@@ -1,6 +1,6 @@
 ---
 name: coatr
-description: Domain knowledge for application and database alerts (COATR): errors, latency, failures in application or DB layers.
+description: "Domain knowledge for application and database alerts (COATR): errors, latency, failures in application or DB layers."
 ---
 
 # Application & DB (COATR)

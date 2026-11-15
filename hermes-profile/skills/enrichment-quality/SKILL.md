@@ -1,6 +1,6 @@
 ---
 name: enrichment-quality
-description: Validate ASN, provider, country, location and connection-type enrichment (RIPE-based). Use when an alert or ticket may be explained by wrong or stale enrichment, or when asked about enrichment data.
+description: "Validate ASN, provider, country, location and connection-type enrichment (RIPE-based). Use when an alert or ticket may be explained by wrong or stale enrichment, or when asked about enrichment data."
 ---
 
 # Enrichment quality

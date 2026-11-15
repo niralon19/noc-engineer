@@ -1,6 +1,6 @@
 ---
 name: kafka-pipeline
-description: Kafka in the data path: producer rate, consumer lag, partitions, rebalances, retention. Use when data is lost or delayed between servers and processing.
+description: "Kafka in the data path: producer rate, consumer lag, partitions, rebalances, retention. Use when data is lost or delayed between servers and processing."
 ---
 
 # Kafka pipeline

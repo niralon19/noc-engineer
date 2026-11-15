@@ -265,7 +265,9 @@ def test_comment_posts_once_with_marker(tmp_path):
     assert r1["data"]["posted"] is True and r2["data"]["posted"] is False and len(posted) == 1
     assert "Ruled out:" in posted[0] and "[noc-engineer:abcdef0123456789:INV-1]" in posted[0]
     lines = [json.loads(l) for l in (tmp_path / "audit.jsonl").read_text().splitlines()]
-    assert [l["outcome"] for l in lines] == ["posted", "skipped:duplicate"]
+    outcomes = [l["outcome"] for l in lines]
+    assert outcomes == ["posted", "ok", "skipped:duplicate", "ok"]      # policy record + per-call record for each call
+    assert all(l["tool"] == "add_investigation_comment" for l in lines)
     assert "token" not in json.dumps(lines[0])
 
 
@@ -292,3 +294,51 @@ def test_not_configured_names_the_question_and_health_lists_it():
     assert "G4" in monitoring.query_logs("x")["error"]["message"]
     ask = health.noc_mcp_health()["data"]["ask_team"]
     assert any(a.startswith("E1") for a in ask) and any(a.startswith("H1") for a in ask)
+
+
+def test_every_tool_call_is_audited_including_reads_and_failures(tmp_path):
+    log = tmp_path / "audit.jsonl"
+    ctx_with({("GET", "/api/v1/query"): prom_vector({"a": 1})}, security={"allow_writes": "false", "audit_log": str(log)},
+             server_queries={"rx_drops": "x"})
+    servers.get_server_drops(["srv1"])
+    pipeline.get_hop_counts("server_nic")                         # error path
+    jira.add_investigation_comment("NOC-1", GOOD)                 # denied write
+    recs = [json.loads(l) for l in log.read_text().splitlines()]
+    assert [(r["tool"], r["outcome"]) for r in recs] == [
+        ("get_server_drops", "ok"), ("get_hop_counts", "error:hop_not_instrumented"),
+        ("add_investigation_comment", "error:permission_denied")]
+    assert recs[2]["args"]["_write"] is True and recs[2]["investigation"]["id"] == "INV-1"
+
+
+def test_http_transport_requires_bearer_token():
+    import os
+    import socket
+    import subprocess
+    import time
+    import urllib.request
+    s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
+    env = {**os.environ, "NOC_MCP_TOKEN": "s3cret"}
+    srv = ROOT / "noc-mcp" / "server.py"
+    no_token = subprocess.run(["python3", str(srv), "--http", "--port", str(port)], capture_output=True, text=True,
+                              env={k: v for k, v in env.items() if k != "NOC_MCP_TOKEN"}, timeout=20)
+    assert no_token.returncode != 0 and "NOC_MCP_TOKEN" in no_token.stderr
+    p = subprocess.Popen(["python3", str(srv), "--http", "--host", "127.0.0.1", "--port", str(port)], env=env,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        for _ in range(50):
+            try:
+                urllib.request.urlopen(f"http://127.0.0.1:{port}/healthz", timeout=1); break
+            except Exception:
+                time.sleep(0.2)
+        body = b'{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"t","version":"1"}}}'
+        def call(token):
+            req = urllib.request.Request(f"http://127.0.0.1:{port}/mcp", data=body, method="POST",
+                                         headers={"content-type": "application/json", "accept": "application/json, text/event-stream",
+                                                  **({"authorization": f"Bearer {token}"} if token else {})})
+            try:
+                return urllib.request.urlopen(req, timeout=5).status
+            except urllib.error.HTTPError as e:
+                return e.code
+        assert call(None) == 401 and call("wrong") == 401 and call("s3cret") == 200
+    finally:
+        p.terminate(); p.wait(timeout=10)

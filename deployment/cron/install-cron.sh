@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # REQUIRES FROM NIR: B4, B5, D2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file deployment/cron/install-cron.sh`; if BLOCKED, ask Nir. Never invent.
-# Create/refresh the NOC cron jobs in Hermes via `hermes cron create`. Idempotent: remove by name, then create.
+# Create/refresh the NOC cron jobs in Hermes via `hermes cron create`.
+# Safe upgrade: every job is named <job>--<hash of its definition>. The new version is CREATED FIRST; only if that
+# succeeds are older versions of the same job removed. Unchanged jobs are left alone. A failed create keeps the old job.
 #
 # Usage:
 #   deployment/cron/install-cron.sh [--profile noc-engineer] [--deliver slack] [--dry-run] [--all] [job ...]
@@ -8,6 +10,7 @@
 #   --all         -> installs every job, even if its script still raises NotImplementedError
 #   job names     -> installs only those (e.g. `oncall-report`)
 #   --list-jobs   -> prints the known job names and exits
+# Job names in Hermes look like `oncall-report--1a2b3c4d`; `hermes -p <profile> cron list` shows them.
 #
 # Run INSIDE the Hermes pod/host, after the gateway is running and the profile was synced.
 # First run `hermes cron create --help` and confirm the flags used below exist in your version.
@@ -49,12 +52,34 @@ implemented() {  # script exists and is not a stub
 }
 skip() { echo "SKIP $1: $2"; }
 
+EXISTING=""
+refresh_existing() {  # names of jobs currently in Hermes (VERIFY: parsing assumes names appear verbatim in `cron list`)
+  if [ "$DRY_RUN" = 1 ]; then EXISTING=""; return 0; fi
+  EXISTING="$("$HERMES_BIN" -p "$PROFILE" cron list 2>/dev/null | grep -oE '[a-z0-9-]+--[0-9a-f]{8}' | sort -u || true)"
+}
+defhash() { printf '%s' "$*" | sha256sum | cut -c1-8; }
+
+# install_job <job> <create args...>: create <job>--<hash> first, then remove older versions of <job>.
+install_job() {
+  local job="$1"; shift
+  local versioned="$job--$(defhash "$@")"
+  if printf '%s\n' "$EXISTING" | grep -qx "$versioned"; then echo "SAME $job ($versioned unchanged)"; return 0; fi
+  if ! hermes cron create "$@" --name "$versioned"; then
+    echo "FAIL $job: create failed; previous version left running" >&2; FAILED=$((FAILED+1)); return 0
+  fi
+  local old
+  for old in $(printf '%s\n' "$EXISTING" | grep -E "^$job--[0-9a-f]{8}$" | grep -vx "$versioned" || true); do
+    hermes cron remove "$old" >/dev/null 2>&1 && echo "     retired $old" || echo "WARN could not remove $old (remove it manually)" >&2
+  done
+  if [ "$DRY_RUN" = 1 ]; then echo "     (dry-run: would retire older versions of $job after a successful create)"; fi
+  echo "OK   $job -> $versioned"
+}
+FAILED=0
+
 job_script() { # name schedule script
   wanted "$1" || return 0
   if [ "$ALL" = 0 ] && ! implemented "$3"; then skip "$1" "script $3 not implemented yet (use --all or name the job to force)"; [ ${#SELECTED[@]} -eq 0 ] && return 0; fi
-  hermes cron remove "$1" >/dev/null 2>&1 || true
-  hermes cron create "$2" --name "$1" --no-agent --script "$SCRIPTS/$3" --deliver "$DELIVER"
-  echo "OK   $1"
+  install_job "$1" "$2" --no-agent --script "$SCRIPTS/$3" --deliver "$DELIVER"
 }
 job_agent() { # name schedule prompt_file script(or -) skills...
   local name="$1" sched="$2" prompt="$3" script="$4"; shift 4
@@ -64,12 +89,11 @@ job_agent() { # name schedule prompt_file script(or -) skills...
   fi
   local extra=(); local s; for s in "$@"; do extra+=(--skill "$s"); done
   if [ "$script" != "-" ]; then extra+=(--script "$SCRIPTS/$script"); fi   # script stdout becomes agent context
-  hermes cron remove "$name" >/dev/null 2>&1 || true
-  hermes cron create "$sched" "$(cat "$HERE/prompts/$prompt")" --name "$name" "${extra[@]}" --deliver "$DELIVER"
-  echo "OK   $name"
+  install_job "$name" "$sched" "$(cat "$HERE/prompts/$prompt")" "${extra[@]}" --deliver "$DELIVER"
 }
 
 echo "profile=$PROFILE deliver=$DELIVER scripts=$SCRIPTS"
+refresh_existing
 echo "NOTE: schedules are meant as Asia/Jerusalem. Container time now: $(date '+%H:%M %Z'). If it is UTC, confirm how Hermes interprets cron times."
 
 job_script data-quality-scan    "*/15 * * * *" data_quality_scan.py
@@ -81,4 +105,5 @@ job_agent  proactive-review     "*/15 * * * *" proactive-review.md anomaly_scan.
 job_agent  oncall-report        "0 7 * * *"    oncall-report.md    -               oncall-report jira-operations observability-queries
 
 hermes cron list
-echo "Test a job now: hermes -p $PROFILE cron run <name>"
+echo "Test a job now: hermes -p $PROFILE cron run <job--hash from the list>"
+[ "$FAILED" -eq 0 ] || { echo "$FAILED job(s) failed to install; old versions kept" >&2; exit 1; }

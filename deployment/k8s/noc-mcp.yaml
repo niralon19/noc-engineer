@@ -15,13 +15,14 @@ spec:
         - name: noc-mcp
           image: TBD-registry/noc-mcp:TBD
           ports: [{name: mcp, containerPort: 8765}]
-          envFrom: [{secretRef: {name: noc-mcp-env}}]       # PROMETHEUS_URL, ECK_*, ARGOCD_*, *_TOKEN, JIRA_*, RULES_API_*
+          envFrom: [{secretRef: {name: noc-mcp-env}}]       # NOC_MCP_TOKEN (required), PROMETHEUS_URL, ECK_*, ARGOCD_*, *_TOKEN, JIRA_*, RULES_API_*
           env:
             - {name: NOC_MCP_ALLOW_WRITES, value: "false"}   # Jira comments stay off until shadow mode is over
           volumeMounts:
             - {name: config, mountPath: /config}
             - {name: data, mountPath: /data}
-          readinessProbe: {tcpSocket: {port: mcp}, periodSeconds: 10}
+          readinessProbe: {httpGet: {path: /healthz, port: mcp}, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /healthz, port: mcp}, initialDelaySeconds: 15, periodSeconds: 20}
           resources:
             requests: {cpu: 100m, memory: 256Mi}
             limits: {memory: 512Mi}

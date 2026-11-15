@@ -1,6 +1,6 @@
 ---
 name: jira-operations
-description: Team Jira conventions: search before create, dedup, linking, priority mapping, comment format. Use before any Jira read or write.
+description: "Team Jira conventions: search before create, dedup, linking, priority mapping, comment format. Use before any Jira read or write."
 ---
 
 # Jira operations

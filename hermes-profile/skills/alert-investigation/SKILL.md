@@ -1,6 +1,6 @@
 ---
 name: alert-investigation
-description: Investigate a new alert (Grafana or anomaly engine) and locate where the problem is. Use for any incoming alert.
+description: "Investigate a new alert (Grafana or anomaly engine) and locate where the problem is. Use for any incoming alert."
 ---
 
 # Alert investigation

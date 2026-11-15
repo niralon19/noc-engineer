@@ -1,6 +1,6 @@
 ---
 name: customer-ticket
-description: Handle a Jira ticket opened by a customer or another team: extract the symptom, investigate, draft a reply. Use for Jira intake events.
+description: "Handle a Jira ticket opened by a customer or another team: extract the symptom, investigate, draft a reply. Use for Jira intake events."
 ---
 
 # Customer ticket

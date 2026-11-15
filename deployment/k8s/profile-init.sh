@@ -1,12 +1,14 @@
 #!/bin/sh
 # Init container: unpack the hermes-profile ConfigMap (flattened keys) into the persistent HERMES_HOME.
-# Keys: SOUL.md, skills__<name>__SKILL.md, scripts__<file>. config.yaml is NOT touched (lives on the PVC).
+# Keys: SOUL.md, config.yaml (seed only), skills__<name>__SKILL.md, scripts__<file>.
 # Removes skills this repo deployed before but no longer ships; keeps skills Hermes created itself.
 set -eu
 SRC="${PROFILE_SRC:-/profile-src}"
 DEST="${HERMES_HOME:?set HERMES_HOME}"
 mkdir -p "$DEST/skills" "$DEST/scripts"
 cp "$SRC/SOUL.md" "$DEST/SOUL.md"
+# Seed config.yaml only on first start; afterwards it is owned by Hermes (`hermes config set` / merge_config.py).
+if [ ! -f "$DEST/config.yaml" ] && [ -f "$SRC/config.yaml" ]; then cp "$SRC/config.yaml" "$DEST/config.yaml"; echo "seeded config.yaml"; fi
 NEW_MANIFEST="$DEST/.repo-managed-skills.new"
 : > "$NEW_MANIFEST"
 for f in "$SRC"/skills__*__SKILL.md; do

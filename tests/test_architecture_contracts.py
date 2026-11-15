@@ -33,10 +33,13 @@ def test_soul_routes_to_every_skill():
         assert f"`{s}`" in soul, s
 
 
-def test_skill_frontmatter_name_matches_directory():
+def test_skill_frontmatter_is_valid_yaml():
+    import yaml
     for s in SKILLS:
-        head = (ROOT / "hermes-profile" / "skills" / s / "SKILL.md").read_text().splitlines()
-        assert head[0] == "---" and f"name: {s}" in head[:4], s
+        text = (ROOT / "hermes-profile" / "skills" / s / "SKILL.md").read_text()
+        assert text.startswith("---\n"), s
+        meta = yaml.safe_load(text.split("---\n", 2)[1])      # strict parse, like Hermes' loader
+        assert meta["name"] == s and isinstance(meta["description"], str) and meta["description"], s
 
 
 def test_six_cron_jobs_defined_via_hermes_cli_script():
@@ -209,7 +212,7 @@ def test_every_skeleton_file_is_registered_tagged_and_mapped():
     allowed_docs = {"README.md", "noc-mcp/README.md", "CLAUDE.md", "AGENTS.md", "docs/OPEN-QUESTIONS.md", "docs/STATUS.md",
                     "docs/מדריך-הפרויקט.md", "docs/hermes-mapping.md", "docs/migration-from-crewai.md", "docs/tools-contract.md",
                     "docs/decisions.md", "docs/skeleton-files.yaml", "deployment/k8s/README.md", "deployment/k8s/gen_kustomization.py",
-                    "deployment/cron/README.md", "deployment/docker-compose.yml", "deployment/day0-check.sh", "deployment/sync-profile.sh",
+                    "deployment/cron/README.md", "deployment/docker-compose.yml", "deployment/merge_config.py", "deployment/day0-check.sh", "deployment/sync-profile.sh",
                     "hermes-profile/AUTHORING.md", "noc-mcp/schemas/common.py", "noc-mcp/schemas/pipeline.py", "noc-mcp/tools/pipeline.py",
                     "noc-mcp/tools/rules.py", "noc-mcp/tools/servers.py", "noc-mcp/tools/kafka.py", "noc-mcp/config/README.md",
                     "noc-mcp/tests/README.md", "noc-mcp/security/README.md", "workflows/README.md", "docs/project-map.he.md",
@@ -223,3 +226,25 @@ def test_file_mode_blocks_and_exits_nonzero():
     r = subprocess.run(["python3", str(ROOT / "scripts" / "open_items.py"), "--file", "anomaly-engine/detection.py"],
                        capture_output=True, text=True)
     assert r.returncode == 1 and "BLOCKED" in r.stdout and "[K1]" in r.stdout
+
+
+def test_sync_profile_seeds_then_merges_config_safely(tmp_path):
+    import subprocess
+    import yaml
+    fake = tmp_path / "bin"; fake.mkdir()
+    (fake / "hermes").write_text("#!/usr/bin/env bash\nexit 0\n"); (fake / "hermes").chmod(0o755)
+    home = tmp_path / "home"
+    env = {"PATH": "/usr/bin:/bin", "HERMES_BIN": str(fake / "hermes"), "HERMES_HOME": str(home)}
+    script = str(ROOT / "deployment" / "sync-profile.sh")
+    subprocess.run(["bash", script], check=True, env=env, capture_output=True)
+    live = yaml.safe_load((home / "config.yaml").read_text())
+    assert live["mcp_servers"]["noc_mcp"]["url"]                     # seeded on first run
+    live["model"]["base_url"] = "https://real-kimi/v1"                # operator filled the real value
+    live["model"]["default"] = "kimi-k3"
+    live["other_setting"] = {"keep": True}
+    (home / "config.yaml").write_text(yaml.safe_dump(live))
+    plan = subprocess.run(["bash", script], check=True, env=env, capture_output=True, text=True).stdout
+    assert "base_url" not in plan                                    # placeholder never overwrites a real value
+    subprocess.run(["bash", script, "--apply-config"], check=True, env=env, capture_output=True)
+    after = yaml.safe_load((home / "config.yaml").read_text())
+    assert after["model"]["base_url"] == "https://real-kimi/v1" and after["other_setting"] == {"keep": True}

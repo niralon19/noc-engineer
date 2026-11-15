@@ -1,6 +1,6 @@
 ---
 name: user-question
-description: Answer a question from a team member in chat or Slack about alerts, metrics, incidents, Jira or the environment.
+description: "Answer a question from a team member in chat or Slack about alerts, metrics, incidents, Jira or the environment."
 ---
 
 # User question

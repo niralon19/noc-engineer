@@ -38,5 +38,8 @@ def audit(ctx: Context, tool: str, args: dict, outcome: str) -> None:
     rec = {"at": iso(now()), "tool": tool, "outcome": outcome,
            "args_sha256": hashlib.sha256(json.dumps(redact(args), sort_keys=True, default=str).encode()).hexdigest(),
            "args": redact({k: v for k, v in args.items() if k != "investigation"})}
+    if isinstance(args.get("investigation"), dict):
+        inv = args["investigation"]
+        rec["investigation"] = {"id": inv.get("investigation_id"), "status": inv.get("status")}
     with p.open("a") as f:
         f.write(json.dumps(rec) + "\n")

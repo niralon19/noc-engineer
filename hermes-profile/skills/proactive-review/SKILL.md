@@ -1,6 +1,6 @@
 ---
 name: proactive-review
-description: Review findings from the deterministic anomaly engine (deviation from baseline, slow drift, degradation below alert threshold) and decide if they matter.
+description: "Review findings from the deterministic anomaly engine (deviation from baseline, slow drift, degradation below alert threshold) and decide if they matter."
 ---
 
 # Proactive review

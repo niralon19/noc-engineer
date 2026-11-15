@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Copy the version-controlled profile into the real Hermes profile. Copy, never symlink
 # (a bare symlink can make Hermes silently use the default profile).
-# config.yaml is NOT overwritten: merge the mcp_servers block yourself (see hermes-profile/config.yaml).
+# config.yaml: seeded when missing; when present, managed keys are merged only with --apply-config (backup kept).
 # VERIFY the profile path for your Docker image / host before first use.
 set -euo pipefail
 PROFILE="${PROFILE:-noc-engineer}"
-[ "${1:-}" = "--profile" ] && PROFILE="$2"
+APPLY_CONFIG=""
+while [ $# -gt 0 ]; do case "$1" in --profile) PROFILE="$2"; shift 2;; --apply-config) APPLY_CONFIG="--apply"; shift;; *) shift;; esac; done
 HERMES="${HERMES_BIN:-hermes}"
 SRC="$(cd "$(dirname "$0")/../hermes-profile" && pwd)"
 DEST="${HERMES_HOME:-$HOME/.hermes/profiles/$PROFILE}"
@@ -26,4 +27,6 @@ cp -a "$SRC/skills/." "$DEST/skills/"
 cp -a "$SRC/scripts/." "$DEST/scripts/"
 find "$DEST/scripts" -name "__pycache__" -prune -exec rm -rf {} +
 echo "Synced SOUL.md, skills/, scripts/ -> $DEST"
+# config.yaml: seed if missing; otherwise show (or with --apply-config, apply) a merge of the managed keys only.
+python3 "$(dirname "$0")/merge_config.py" "$SRC/config.yaml" "$DEST/config.yaml" ${APPLY_CONFIG:-$( [ -f "$DEST/config.yaml" ] || echo --apply )}
 echo "Next: merge mcp_servers from hermes-profile/config.yaml, then: deployment/day0-check.sh --profile $PROFILE"

@@ -1,6 +1,6 @@
 ---
 name: observability-queries
-description: How to query Prometheus/Thanos/Grafana/ECK correctly and decide whether data is trustworthy. Use whenever you query metrics or logs.
+description: "How to query Prometheus/Thanos/Grafana/ECK correctly and decide whether data is trustworthy. Use whenever you query metrics or logs."
 ---
 
 # Observability queries

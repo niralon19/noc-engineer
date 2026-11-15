@@ -1,6 +1,6 @@
 ---
 name: coupling
-description: Rule coupling problems: records of a rule are not coupled/linked with the organization's internal enrichment as expected.
+description: "Rule coupling problems: records of a rule are not coupled/linked with the organization's internal enrichment as expected."
 ---
 
 # Coupling

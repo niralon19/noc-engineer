@@ -1,6 +1,6 @@
 ---
 name: network-engineering
-description: DNS, IP/CIDR, ASN/provider/RIPE, routing, connectivity and firewall checks. Use when a symptom may be in the network path or addressing.
+description: "DNS, IP/CIDR, ASN/provider/RIPE, routing, connectivity and firewall checks. Use when a symptom may be in the network path or addressing."
 ---
 
 # Network engineering

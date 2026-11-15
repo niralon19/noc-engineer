@@ -1,6 +1,6 @@
 ---
 name: platform-operations
-description: Kubernetes platform: Rancher and OpenShift clusters, Argo CD, pods, rollouts, resources, Postgres and ECK health. Use to confirm or rule out a platform or deploy cause.
+description: "Kubernetes platform: Rancher and OpenShift clusters, Argo CD, pods, rollouts, resources, Postgres and ECK health. Use to confirm or rule out a platform or deploy cause."
 ---
 
 # Platform operations (Rancher, OpenShift, Argo CD)

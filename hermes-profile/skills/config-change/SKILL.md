@@ -1,6 +1,6 @@
 ---
 name: config-change
-description: Customer or team asks to update a rule or configuration: review the request read-only before the change, and verify hermeticity/coupling after it.
+description: "Customer or team asks to update a rule or configuration: review the request read-only before the change, and verify hermeticity/coupling after it."
 ---
 
 # Configuration change

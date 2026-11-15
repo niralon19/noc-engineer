@@ -4,7 +4,7 @@
 # Every skeleton file (stub code, TBD config, template doc) must appear here.
 files:
   # --- Hermes profile
-  hermes-profile/config.yaml: [B2, B3, C1]
+  hermes-profile/config.yaml: [B2, B3, B6, C1]
   hermes-profile/skills/traffic-hermetic/SKILL.md: [I1, E3]
   hermes-profile/skills/coupling/SKILL.md: [I2, E4]
   hermes-profile/skills/enrichment-quality/SKILL.md: [I2, M2]
@@ -52,7 +52,7 @@ files:
   deployment/cron/install-cron.sh: [B4, B5, D2]
   deployment/config/settings.example.yaml: [K1, L1, M1, M3]
   deployment/.env.example: [A2, B2, D1, D2, D3, H1]
-  examples/web-app/hermes_proxy.py: [D4, P2]
+  examples/web-app/hermes_proxy.py: [D4, P2, B6]
   examples/web-app/NocAgentChat.tsx: [D4]
   # --- docs templates
   docs/pipeline-map.md: [E1, E2, E3, E4, E5]

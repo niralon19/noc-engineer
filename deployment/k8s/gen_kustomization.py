@@ -13,7 +13,7 @@ OUT = HERE / "kustomization.yaml"
 
 
 def render() -> str:
-    files = ["SOUL.md=../../hermes-profile/SOUL.md", "profile-init.sh=profile-init.sh"]
+    files = ["SOUL.md=../../hermes-profile/SOUL.md", "config.yaml=../../hermes-profile/config.yaml", "profile-init.sh=profile-init.sh"]
     for p in sorted(PROFILE.glob("skills/*/SKILL.md")):
         files.append(f"skills__{p.parent.name}__SKILL.md=../../hermes-profile/skills/{p.parent.name}/SKILL.md")
     for p in sorted(PROFILE.glob("scripts/*.py")):

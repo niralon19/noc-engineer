@@ -1,6 +1,6 @@
 ---
 name: pipeline-walk
-description: Localize a hermeticity, coupling, loss or load problem by walking the data path hop by hop and finding the first hop where counts diverge. Use in every alert, ticket or proactive investigation.
+description: "Localize a hermeticity, coupling, loss or load problem by walking the data path hop by hop and finding the first hop where counts diverge. Use in every alert, ticket or proactive investigation."
 ---
 
 # Pipeline walk

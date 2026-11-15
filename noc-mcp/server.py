@@ -3,6 +3,8 @@
 Run:  python noc-mcp/server.py                      # stdio (Hermes spawns it: mcp_servers.noc_mcp.command/args)
       python noc-mcp/server.py --http --port 8765   # streamable HTTP (Hermes connects with mcp_servers.noc_mcp.url)
 Config: NOC_MCP_CONFIG (backends.yaml), NOC_MCP_PIPELINE (pipeline.yaml). Secrets from the environment.
+HTTP auth: every request must carry `Authorization: Bearer $NOC_MCP_TOKEN` (fail-closed: the server refuses to
+start in HTTP mode without NOC_MCP_TOKEN unless --insecure-no-auth is given for local testing). /healthz is open.
 Works with the official MCP Python SDK v2 (MCPServer), v1 (FastMCP) or the standalone `fastmcp` package.
 
 If the team's existing FastMCP server is the one Hermes uses, import `register(server)` from here into it instead.
@@ -11,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -37,6 +40,38 @@ def _server_class():
         return FastMCP
 
 
+class BearerAuth:
+    """Pure ASGI middleware: constant-time bearer check on every HTTP request except /healthz."""
+
+    def __init__(self, app, token: str):
+        self.app, self.token = app, token.encode()
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        if scope.get("path") == "/healthz":
+            return await _plain(send, 200, b"ok")
+        import hmac
+        auth = dict(scope.get("headers") or []).get(b"authorization", b"")
+        if not (auth.startswith(b"Bearer ") and hmac.compare_digest(auth[7:], self.token)):
+            return await _plain(send, 401, b"unauthorized")
+        return await self.app(scope, receive, send)
+
+
+async def _plain(send, status: int, body: bytes) -> None:
+    await send({"type": "http.response.start", "status": status, "headers": [(b"content-type", b"text/plain")]})
+    await send({"type": "http.response.body", "body": body})
+
+
+def http_app(server, host: str):
+    try:
+        app = server.streamable_http_app(host=host)         # SDK v2
+    except TypeError:
+        app = server.streamable_http_app()                  # SDK v1 / fastmcp
+    token = os.environ.get("NOC_MCP_TOKEN", "")
+    return BearerAuth(app, token) if token else app
+
+
 def register(server) -> list[str]:
     """Register every noc-mcp tool on an existing FastMCP/MCPServer instance."""
     for name, fn in sorted(REGISTRY.items()):
@@ -59,6 +94,7 @@ def main() -> None:
     ap.add_argument("--host", default="0.0.0.0")
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--list", action="store_true", help="print registered tools and exit")
+    ap.add_argument("--insecure-no-auth", action="store_true", help="HTTP without NOC_MCP_TOKEN (local testing only)")
     a = ap.parse_args()
     if a.list:
         for n in sorted(REGISTRY):
@@ -67,11 +103,10 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, stream=sys.stderr)
     server = build()
     if a.http:
-        try:                                              # SDK v2: options passed to run()
-            server.run(transport="streamable-http", host=a.host, port=a.port)
-        except TypeError:                                 # SDK v1 / fastmcp: options on settings
-            server.settings.host, server.settings.port = a.host, a.port
-            server.run(transport="streamable-http")
+        if not os.environ.get("NOC_MCP_TOKEN") and not a.insecure_no_auth:
+            sys.exit("refusing to serve HTTP without NOC_MCP_TOKEN (use --insecure-no-auth only for local tests)")
+        import uvicorn
+        uvicorn.run(http_app(server, a.host), host=a.host, port=a.port, log_level="info")
     else:
         server.run(transport="stdio")
 

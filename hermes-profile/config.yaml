@@ -1,4 +1,4 @@
-# REQUIRES FROM NIR: B2, B3, C1 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/config.yaml`; if BLOCKED, ask Nir. Never invent.
+# REQUIRES FROM NIR: B2, B3, B6, C1 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/config.yaml`; if BLOCKED, ask Nir. Never invent.
 # Hermes-native config fragment for profile `noc-engineer`.
 # Lives at $HERMES_HOME/config.yaml (usually ~/.hermes/profiles/noc-engineer/config.yaml).
 # Do NOT overwrite the live file with this one: merge the mcp_servers block with
@@ -30,6 +30,8 @@ mcp_servers:
   noc_mcp:                      # underscores: Hermes rewrites '-' and '.' in server/tool names
     # Default: noc-mcp runs as its own pod (deployment/k8s/noc-mcp.yaml) so backend credentials stay out of the Hermes pod.
     url: "http://noc-mcp:8765/mcp"      # VERIFY the path your MCP SDK serves (streamable HTTP default is /mcp)
+    headers:
+      Authorization: "Bearer ${NOC_MCP_TOKEN}"   # VERIFY (B6): env interpolation in headers on your Hermes version; same token as the noc-mcp pod
     # Alternative (same host, stdio): Hermes spawns the server itself
     # command: "python"
     # args: ["/app/noc-mcp/server.py"]

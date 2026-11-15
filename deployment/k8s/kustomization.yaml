@@ -10,6 +10,7 @@ configMapGenerator:
   - name: hermes-profile
     files:
       - SOUL.md=../../hermes-profile/SOUL.md
+      - config.yaml=../../hermes-profile/config.yaml
       - profile-init.sh=profile-init.sh
       - skills__alert-investigation__SKILL.md=../../hermes-profile/skills/alert-investigation/SKILL.md
       - skills__capture-servers__SKILL.md=../../hermes-profile/skills/capture-servers/SKILL.md
