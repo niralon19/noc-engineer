@@ -12,6 +12,10 @@ configMapGenerator:
       - SOUL.md=../../hermes-profile/SOUL.md
       - config.yaml=../../hermes-profile/config.yaml
       - profile-init.sh=profile-init.sh
+      - reconcile_cron.py=../cron/reconcile_cron.py
+      - cron-jobs.yaml=../cron/jobs.yaml
+      - oncall-report.md=../cron/prompts/oncall-report.md
+      - proactive-review.md=../cron/prompts/proactive-review.md
       - skills__alert-investigation__SKILL.md=../../hermes-profile/skills/alert-investigation/SKILL.md
       - skills__capture-servers__SKILL.md=../../hermes-profile/skills/capture-servers/SKILL.md
       - skills__change-correlation__SKILL.md=../../hermes-profile/skills/change-correlation/SKILL.md

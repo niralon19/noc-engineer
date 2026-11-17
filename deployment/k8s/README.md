@@ -8,7 +8,7 @@
 - Runs as non-root (OpenShift restricted SCC). Egress only to: Kimi endpoint, MCP server, Slack (Socket Mode, outbound WebSocket), Jira.
 - One process (`hermes gateway run`) serves Slack, cron and the API server (port 8642, `/health`). Service + Route expose the API to the web app backend only; never to browsers directly.
 - Secret `hermes-noc-engineer-env` holds the values from `deployment/.env.example` (OPENAI_API_KEY, API_SERVER_KEY, SLACK_*, backends).
-- After first deploy: exec into the pod and run `deployment/cron/install-cron.sh` once.
+- Cron is part of the deployment: init container `reconcile-cron` applies `deployment/cron/jobs.yaml` on every pod start (create-then-retire, prune, skip stubs, `--soft`). No manual step.
 
 ## Commands
 ```bash

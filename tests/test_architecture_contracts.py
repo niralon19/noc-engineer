@@ -42,13 +42,17 @@ def test_skill_frontmatter_is_valid_yaml():
         assert meta["name"] == s and isinstance(meta["description"], str) and meta["description"], s
 
 
-def test_six_cron_jobs_defined_via_hermes_cli_script():
-    script = (ROOT / "deployment" / "cron" / "install-cron.sh").read_text()
-    for name in ["data-quality-scan", "enrichment-audit", "anomaly-baseline",
-                 "jira-polling-backup", "housekeeping", "proactive-review", "oncall-report"]:
-        assert name in script, name
-    assert "hermes cron create" in script
-    assert not list((ROOT / "deployment" / "cron").glob("*.yaml"))  # Hermes does not read cron YAML
+def test_cron_jobs_declared_and_installed_via_hermes_cli():
+    import yaml
+    spec = yaml.safe_load((ROOT / "deployment" / "cron" / "jobs.yaml").read_text())
+    names = [j["name"] for j in spec["jobs"]]
+    assert names == ["data-quality-scan", "enrichment-audit", "anomaly-baseline", "jira-polling-backup",
+                     "housekeeping", "proactive-review", "oncall-report"]
+    for j in spec["jobs"]:
+        assert j["mode"] in ("script", "agent") and j["schedule"].count(" ") == 4, j
+        assert (j["mode"] == "agent") == bool(j.get("prompt")), j
+    # jobs.yaml is OUR declaration; Hermes only ever sees `hermes cron create` calls from the reconciler
+    assert '"cron", "create"' in (ROOT / "deployment" / "cron" / "reconcile_cron.py").read_text()
 
 
 def test_noscript_scripts_and_prompt_exist():
@@ -58,12 +62,61 @@ def test_noscript_scripts_and_prompt_exist():
         assert (ROOT / "deployment" / "cron" / "prompts" / pr).exists(), pr
 
 
-def test_cron_skills_exist():
-    import re
-    script = (ROOT / "deployment" / "cron" / "install-cron.sh").read_text()
-    for line in re.findall(r"^job_agent .*$", script, re.M):
-        for s in __import__("shlex").split(line)[5:]:
-            assert s in SKILLS, s
+def test_cron_skills_prompts_and_scripts_exist():
+    import yaml
+    for j in yaml.safe_load((ROOT / "deployment" / "cron" / "jobs.yaml").read_text())["jobs"]:
+        for s in j.get("skills", []):
+            assert s in SKILLS, (j["name"], s)
+        if j.get("prompt"):
+            assert (ROOT / "deployment" / "cron" / "prompts" / j["prompt"]).exists(), j
+        if j.get("script"):
+            assert (ROOT / "hermes-profile" / "scripts" / j["script"]).exists(), j
+
+
+def test_reconcile_cron_lifecycle_create_same_update_prune_fail(tmp_path):
+    """Simulates pod starts against a stateful fake Hermes CLI."""
+    import subprocess
+    import yaml
+    jobs_file = tmp_path / "jobs.yaml"
+    spec = yaml.safe_load((ROOT / "deployment" / "cron" / "jobs.yaml").read_text())
+    jobs_file.write_text(yaml.safe_dump(spec))
+    state, fail = tmp_path / "state", tmp_path / "fail"
+    fake = tmp_path / "hermes"
+    fake.write_text(f"""#!/usr/bin/env bash
+J={state}; touch $J
+case "$1 $2" in
+  "cron list") cat $J;;
+  "cron create") [ -f {fail} ] && exit 3; prev=""; for a in "$@"; do [ "$prev" = "--name" ] && echo "$a" >> $J; prev="$a"; done;;
+  "cron remove") grep -vx "$3" $J > $J.t || true; mv $J.t $J;;
+esac
+""")
+    fake.chmod(0o755)
+    prompts = tmp_path / "prompts"; prompts.mkdir()
+    for p in (ROOT / "deployment" / "cron" / "prompts").glob("*.md"):
+        (prompts / p.name).write_text(p.read_text())
+    home = tmp_path / "home"
+
+    def reconcile(*extra):
+        return subprocess.run(["python3", str(ROOT / "deployment" / "cron" / "reconcile_cron.py"), "--profile", "",
+                               "--home", str(home), "--hermes-bin", str(fake), "--jobs", str(jobs_file),
+                               "--prompts-dir", str(prompts), *extra], capture_output=True, text=True)
+
+    r = reconcile()
+    assert r.returncode == 0 and "OK   oncall-report" in r.stdout and "SKIP proactive-review" in r.stdout
+    first = state.read_text().split()
+    assert reconcile().stdout.count("SAME oncall-report") == 1 and state.read_text().split() == first
+    (prompts / "oncall-report.md").write_text("changed prompt")
+    fail.touch()
+    r = reconcile()
+    assert r.returncode == 1 and state.read_text().split() == first          # failed create keeps the old job
+    assert reconcile("--soft").returncode == 0                                # init container never blocks the pod
+    fail.unlink()
+    r = reconcile()
+    assert "retired " + first[0] in r.stdout and state.read_text().split() != first
+    spec["jobs"] = [j for j in spec["jobs"] if j["name"] != "oncall-report"]
+    jobs_file.write_text(yaml.safe_dump(spec))
+    r = reconcile()
+    assert "PRUNE oncall-report--" in r.stdout and state.read_text().strip() == ""
 
 
 def test_mcp_config_uses_hermes_shape():
@@ -212,7 +265,7 @@ def test_every_skeleton_file_is_registered_tagged_and_mapped():
     allowed_docs = {"README.md", "noc-mcp/README.md", "CLAUDE.md", "AGENTS.md", "docs/OPEN-QUESTIONS.md", "docs/STATUS.md",
                     "docs/מדריך-הפרויקט.md", "docs/hermes-mapping.md", "docs/migration-from-crewai.md", "docs/tools-contract.md",
                     "docs/decisions.md", "docs/skeleton-files.yaml", "deployment/k8s/README.md", "deployment/k8s/gen_kustomization.py",
-                    "deployment/cron/README.md", "deployment/docker-compose.yml", "deployment/merge_config.py", "deployment/day0-check.sh", "deployment/sync-profile.sh",
+                    "deployment/cron/README.md", "deployment/docker-compose.yml", "deployment/merge_config.py", "deployment/cron/reconcile_cron.py", "deployment/day0-check.sh", "deployment/sync-profile.sh",
                     "hermes-profile/AUTHORING.md", "noc-mcp/schemas/common.py", "noc-mcp/schemas/pipeline.py", "noc-mcp/tools/pipeline.py",
                     "noc-mcp/tools/rules.py", "noc-mcp/tools/servers.py", "noc-mcp/tools/kafka.py", "noc-mcp/config/README.md",
                     "noc-mcp/tests/README.md", "noc-mcp/security/README.md", "workflows/README.md", "docs/project-map.he.md",

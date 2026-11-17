@@ -16,4 +16,5 @@
 | 13 | Missing facts are asked, never guessed: one questionnaire (`docs/OPEN-QUESTIONS.md`) + scanner, question IDs surfaced by tools at runtime | Plausible guesses about the environment were the main risk of an LLM-built repo | Filling TBDs with "typical" values |
 | 14 | noc-mcp HTTP requires a shared bearer token (`NOC_MCP_TOKEN`), in addition to the NetworkPolicy; every tool call is audited | Defense in depth; an audit that covers only writes cannot reconstruct what the agent looked at | Network isolation only; write-only audit |
 | 15 | Cron jobs are versioned (`<job>--<hash>`) and replaced create-then-retire | Remove-then-create could leave the team without the morning report if creation failed | Remove-then-create |
+| 16 | Cron is declared in git (`deployment/cron/jobs.yaml`) and reconciled into Hermes on every pod start | Manual `hermes cron create` drifts from git and is forgotten after a PVC restore or a new environment | Manual installation after deploy |
 | 12 | Migration by shadow mode, not big bang | Prove Hermes locates better than CrewAI on the same alerts before switching Jira ownership | Turning CrewAI off first |

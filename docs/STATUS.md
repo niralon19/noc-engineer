@@ -1,7 +1,7 @@
 # STATUS: where the project is now
 
 > Every agent/developer: read this after CLAUDE.md, and UPDATE it at the end of your work (tick boxes, move items, add the date).
-> Last update: 2026-11-15
+> Last update: 2026-11-17
 
 ## Done (in this repo)
 - [x] Hermes profile: SOUL.md, 18 skills (6 route, 3 domain, 9 supporting), `config.yaml` (Kimi K3 custom provider, API server :8642, MCP url, tools.include)
@@ -12,6 +12,7 @@
 - [x] Web app chat example (`examples/web-app/`), Hebrew docs (guide, what-is-Hermes)
 - [x] Ask-Nir mechanism: `docs/OPEN-QUESTIONS.md` (60 questions) + `docs/skeleton-files.yaml` (every skeleton file -> blocking questions, tagged `REQUIRES FROM NIR`) + `scripts/open_items.py` scanner + mandatory protocol in CLAUDE.md; runtime: tools/health name the question ID, SOUL tells Hermes to ask instead of guessing
 - [x] E2E fixes 2026-11-15: skill frontmatter is strict YAML (13 skills would not have loaded); cron upgrade is create-then-retire with versioned names (a failed create keeps the old job); noc-mcp HTTP requires a bearer token (fail-closed) + /healthz; every tool call is audited (reads, errors, denied writes); config.yaml seeded on first deploy and merged safely (`merge_config.py`, backup, placeholders never overwrite real values)
+- [x] Cron as part of the deployment: `deployment/cron/jobs.yaml` + `reconcile_cron.py`, run by init container `reconcile-cron` on every pod start (SAME/create-then-retire/prune/skip stubs, `--soft`, status file checked by day0-check)
 - [x] Tests passing (`python3 -m pytest -q tests`)
 
 ## Waiting for Nir at work (blocks real investigations)

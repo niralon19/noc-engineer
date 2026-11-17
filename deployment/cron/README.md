@@ -1,32 +1,29 @@
-# Scheduled jobs (Hermes-native)
+# Scheduled jobs (Hermes-native, declared in git)
 
-Hermes does **not** read cron YAML. Jobs are created with `hermes cron create` (or `/cron add`, or by asking Hermes) and stored by Hermes in `$HERMES_HOME/cron/jobs.json`. Do not hand-edit that JSON. Docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/cron
+Hermes stores jobs it creates with `hermes cron create` in `$HERMES_HOME/cron/jobs.json` (never hand-edit).
+We declare the desired jobs in **`jobs.yaml`** and a reconciler applies them:
 
-`install-cron.sh` creates/refreshes jobs idempotently (remove by name, then create), always with `-p <profile>`.
+- **Automatically:** init container `reconcile-cron` in `deployment/k8s/hermes.yaml` runs on every pod start.
+  Edit `jobs.yaml` / a prompt -> commit -> Argo sync -> ConfigMap hash changes -> pod restarts -> jobs updated.
+- **Manually:** `deployment/cron/install-cron.sh [--profile P] [--dry-run] [--all] [job ...]`.
 
-```bash
-deployment/cron/install-cron.sh --dry-run                 # see what would run
-deployment/cron/install-cron.sh                           # agent jobs + script jobs whose script is implemented
-deployment/cron/install-cron.sh oncall-report             # one job
-deployment/cron/install-cron.sh --all                     # everything, even stub scripts
-hermes -p noc-engineer cron run oncall-report             # run now to test
-hermes -p noc-engineer cron list | remove <name>
-```
-Script jobs are skipped automatically while their script still raises NotImplementedError, so nothing fails every few minutes.
+Reconciler rules (`reconcile_cron.py`):
+- Job name in Hermes = `<name>--<hash of its definition>`. Unchanged -> `SAME` (nothing touched).
+- Changed -> new version **created first**, old versions retired only after success. Failed create keeps the old job.
+- Removed from `jobs.yaml` -> pruned (only jobs the reconciler created, tracked in `.repo-managed-cron`).
+- Script still a stub (`raise NotImplementedError`) -> `SKIP`; it is installed automatically once implemented.
+- In the init container it runs with `--soft`: cron problems never block the gateway; the result is in
+  `$HERMES_HOME/.cron-reconcile-status.json` and reported by `deployment/day0-check.sh`.
 
-| Job | Schedule | Mode | What runs |
+| Job | Schedule | Mode | Runs |
 |---|---|---|---|
-| data-quality-scan | `*/15 * * * *` | no-agent script | `hermes-profile/scripts/data_quality_scan.py` |
-| enrichment-audit | `*/30 * * * *` | no-agent script | `scripts/enrichment_audit.py` |
-| anomaly-baseline | `0 * * * *` | no-agent script | `scripts/anomaly_baseline.py` |
-| jira-polling-backup | `*/2 * * * *` | no-agent script | `scripts/jira_poll.py` |
-| housekeeping | `0 2 * * *` | no-agent script | `scripts/housekeeping.py` |
-| proactive-review | `*/15 * * * *` | agent + `--script anomaly_scan.py` | `prompts/proactive-review.md`; answers `[SILENT]` when there are no findings |
-| oncall-report | `0 7 * * *` | agent | `prompts/oncall-report.md`, skill `oncall-report`, delivered to the on-call channel |
+| data-quality-scan | `*/15 * * * *` | script (no LLM) | `data_quality_scan.py` |
+| enrichment-audit | `*/30 * * * *` | script | `enrichment_audit.py` |
+| anomaly-baseline | `5 * * * *` | script | `anomaly_baseline.py` (4-week median -> Postgres) |
+| jira-polling-backup | `*/2 * * * *` | script | `jira_poll.py` |
+| housekeeping | `0 2 * * *` | script | `housekeeping.py` |
+| proactive-review | `*/5 * * * *` | agent + `anomaly_scan.py` output | answers `[SILENT]` when there are no findings |
+| oncall-report | `0 7 * * *` | agent | morning report to the on-call channel |
 
-Rules from the Hermes docs:
-- No-agent mode runs a script and delivers its stdout verbatim; no LLM, no tokens. Use it for every deterministic check.
-- Agent jobs start a fresh session each run: the prompt must be self-contained; keep procedures in skills (`--skill`, repeatable).
-- The gateway daemon must be running for jobs to fire.
-- Test one job with `hermes cron run <name>` before relying on the schedule.
-- Run each job in exactly one scheduler. Verify the timezone Hermes uses for cron expressions (ask Nir / `hermes cron --help`); Asia/Jerusalem is the intent.
+UNVERIFIED (B4/B5): exact `hermes cron` flags, whether the CLI works before the gateway starts (init container), cron timezone.
+If the CLI needs a running gateway, move the same command to a `postStart` hook or a sidecar; the reconciler does not change.

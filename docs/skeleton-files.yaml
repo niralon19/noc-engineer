@@ -50,6 +50,7 @@ files:
   deployment/k8s/kustomization.yaml: [C1]
   deployment/argocd/application.yaml: [A1, C4, C1]
   deployment/cron/install-cron.sh: [B4, B5, D2]
+  deployment/cron/jobs.yaml: [B4, B5, D2]
   deployment/config/settings.example.yaml: [K1, L1, M1, M3]
   deployment/.env.example: [A2, B2, D1, D2, D3, H1]
   examples/web-app/hermes_proxy.py: [D4, P2, B6]

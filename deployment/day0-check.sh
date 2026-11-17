@@ -34,6 +34,9 @@ for v in SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_ALLOWED_USERS SLACK_HOME_CHANNEL;
   [ -n "${!v:-}" ] || grep -q "^$v=." "$HOME_DIR/.env" 2>/dev/null || warn "$v not set (Slack will not work / cron output has no channel)"
 done
 check "cron list"                       H cron list
+if [ -f "$HOME_DIR/.cron-reconcile-status.json" ]; then
+  check "cron reconcile (last pod start)" python3 -c "import json,sys;d=json.load(open('$HOME_DIR/.cron-reconcile-status.json'));print(d);sys.exit(1 if d['failed'] else 0)"
+fi
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 [ -f "$REPO_ROOT/scripts/open_items.py" ] && echo "== $(python3 "$REPO_ROOT/scripts/open_items.py" --brief 2>/dev/null) (see docs/OPEN-QUESTIONS.md)"
 echo "== container time: $(date '+%Y-%m-%d %H:%M %Z') (cron schedules assume Asia/Jerusalem)"

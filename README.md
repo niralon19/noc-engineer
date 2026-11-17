@@ -55,7 +55,7 @@ hermes -p noc-engineer cron run oncall-report         # test it now
 Change live settings with `hermes config set`; do not overwrite the live `config.yaml`.
 
 ## Cron
-7 jobs: 5 deterministic no-agent scripts, `proactive-review` (every 15 min) and `oncall-report` (07:00). Details: `deployment/cron/README.md`.
+7 jobs declared in `deployment/cron/jobs.yaml` and applied automatically on every pod start (init container `reconcile-cron`); manual: `install-cron.sh`. Details: `deployment/cron/README.md`.
 
 ## Start order
 0. Connect Kimi K3 + the existing FastMCP server to Hermes; one real alert end to end.

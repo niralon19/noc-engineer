@@ -16,7 +16,7 @@
 | B1 | מה ה-image של Hermes, איזו גרסה (`hermes --version`), ומה `HERMES_HOME` בתוכו? | פריסה ו-PVC | `deployment/k8s/hermes.yaml` (TBD-hermes-image, TBD-path) | `/opt/data` או `~/.hermes` | ❓ |
 | B2 | מה כתובת ה-endpoint של Kimi K3 ומה מזהה המודל (`GET /v1/models`)? | Hermes לא יענה בלי זה | `hermes-profile/config.yaml` → `model.base_url`, `model.default` | `https://<host>/v1`, `kimi-k3` | ❓ |
 | B3 | האם אפשר לשלוט ב-`reasoning_effort` דרך ה-endpoint? | עלות ומהירות ב-cron ובשאלות | `docs/decisions.md` | נמוך ב-cron, מקסימלי בחקירה | ❓ |
-| B4 | הפלט של `hermes cron create --help`, `hermes gateway --help` ו-`hermes mcp --help` | לאמת את הדגלים בסקריפטים | `deployment/cron/install-cron.sh`, `deployment/day0-check.sh` | — | ❓ |
+| B4 | הפלט של `hermes cron create --help`, `hermes cron list`, `hermes gateway --help` ו-`hermes mcp --help`. האם `cron create` עובד כשה-gateway עוד לא רץ (ב-init container)? | לאמת את הדגלים בסקריפטים | `deployment/cron/install-cron.sh`, `deployment/day0-check.sh` | — | ❓ |
 | B6 | בגרסה שלך, האם `mcp_servers.*.headers` תומך ב-`${ENV}`? והאם ה-API server מכבד את `X-Hermes-Session-Id`, `X-Hermes-Session-Key` ו-`Idempotency-Key`? | auth ל-noc-mcp, ורציפות שיחה ו-retry בצ'אט באפליקציה | `hermes-profile/config.yaml`, `examples/web-app/hermes_proxy.py` | לבדוק עם `hermes mcp test noc_mcp` ובקריאה כפולה עם אותו `Idempotency-Key` | ❓ |
 | B5 | Cron ב-Hermes מפרש שעות ב-UTC או לפי שעון מקומי? | דוח הבוקר ב-07:00 שעון ישראל | `deployment/cron/README.md` | — | ❓ |
 

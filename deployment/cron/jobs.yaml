@@ -1,0 +1,26 @@
+# REQUIRES FROM NIR: B4, B5, D2 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file deployment/cron/jobs.yaml`; if BLOCKED, ask Nir. Never invent.
+# Desired cron jobs for this Hermes profile (source of truth in git).
+# Reconciled into Hermes on every pod start by the `reconcile-cron` init container (deployment/k8s/hermes.yaml),
+# or manually with deployment/cron/install-cron.sh. Edit here -> commit -> Argo sync -> pod restarts -> jobs updated.
+#
+# mode: script = no-agent (runs the script, delivers stdout, no LLM)
+#       agent  = Hermes session with the prompt + skills; optional `script` output is given to the agent as context
+# Jobs whose script still raises NotImplementedError are skipped automatically (no failing job every few minutes).
+deliver: slack            # VERIFY delivery syntax (B4); slack -> SLACK_HOME_CHANNEL (D2)
+jobs:
+  - {name: data-quality-scan,   schedule: "*/15 * * * *", mode: script, script: data_quality_scan.py}
+  - {name: enrichment-audit,    schedule: "*/30 * * * *", mode: script, script: enrichment_audit.py}
+  - {name: anomaly-baseline,    schedule: "5 * * * *",    mode: script, script: anomaly_baseline.py, deliver: local}
+  - {name: jira-polling-backup, schedule: "*/2 * * * *",  mode: script, script: jira_poll.py, deliver: local}
+  - {name: housekeeping,        schedule: "0 2 * * *",    mode: script, script: housekeeping.py, deliver: local}
+  - name: proactive-review
+    schedule: "*/5 * * * *"
+    mode: agent
+    prompt: proactive-review.md
+    script: anomaly_scan.py
+    skills: [proactive-review, change-correlation, pipeline-walk, observability-queries]
+  - name: oncall-report
+    schedule: "0 7 * * *"   # VERIFY timezone handling (B5): intended 07:00 Asia/Jerusalem
+    mode: agent
+    prompt: oncall-report.md
+    skills: [oncall-report, jira-operations, observability-queries]
