@@ -1,5 +1,5 @@
-# Backends for the noc-tools skill and the cron scripts. Lives at $HERMES_HOME/noc.yaml.
-# ${VAR} / ${VAR:-default} come from .env (k8s Secret). Anything empty/TBD returns "not_configured" (never guessed).
+# Settings for the noc-tools CLI and the cron scripts. URLs/tokens come from .env (${VAR}).
+# Anything empty or TBD returns "not_configured" (never guessed).
 
 http:
   timeout_seconds: 20
@@ -14,7 +14,7 @@ elasticsearch:                     # ECK
   url: ${ECK_URL:-}
   user: ${ECK_USER:-}
   password: ${ECK_PASSWORD:-}
-  default_index: TBD               # Q4
+  default_index: TBD
   timestamp_field: "@timestamp"
   max_hits: 50
 
@@ -26,18 +26,18 @@ jira:
   url: ${JIRA_URL:-}
   user: ${JIRA_USER:-}             # set -> basic auth with token; empty -> bearer PAT
   token: ${JIRA_TOKEN:-}
-  customer_jql: TBD                # Q5: which tickets are customer issues the agent handles
+  customer_jql: TBD  # which tickets are customer issues the agent handles
   max_results: 20
   comment_marker: noc-engineer
   allow_comment: ${NOC_JIRA_ALLOW_COMMENT:-false}
 
 pipeline:
-  hops: []                         # Q6: hop ids of the data path; when set, investigations must use them
+  hops: []  # hop ids of the data path; when set, investigations must use them
 
 anomaly:
   baseline: -7d                    # compare now vs the same moment last week
   cooldown_minutes: 60             # do not re-report the same series/kind within this window
-  checks:                          # Q3: one entry per metric family. Query = instant vector, one series per entity.
+  checks:  # one entry per metric family. Query = instant vector, one series per entity.
     - name: port_in_rate
       query: TBD                   # e.g. sum by (instance) (rate(<rx bytes metric>[5m]))
       min_ratio: 0.5               # defaults, tune with the team

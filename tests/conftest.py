@@ -4,9 +4,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILE = ROOT / "hermes-profile"
-sys.path.insert(0, str(PROFILE / "skills" / "noc-tools" / "scripts"))
-sys.path.insert(0, str(PROFILE / "scripts"))
+sys.path.insert(0, str(ROOT / "skills" / "noc-tools" / "scripts"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 import noclib  # noqa: E402
 

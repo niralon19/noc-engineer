@@ -1,4 +1,17 @@
+# Hermes profile distribution: never commit secrets or runtime state
+auth.json
 .env
+.env.*
+state.db*
+*.pid
+*.lock
+memories/
+sessions/
+logs/
+plans/
+workspace/
+home/
+data/
+*_cache/
 __pycache__/
 .pytest_cache/
-*.pyc

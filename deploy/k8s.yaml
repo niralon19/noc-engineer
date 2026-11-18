@@ -1,4 +1,4 @@
-# One pod: Hermes gateway (Slack + cron). Secret hermes-noc-env is created outside git from hermes-profile/.env.example.
+# One pod: Hermes gateway (Slack + cron). Secret hermes-noc-env (outside git) holds the env vars listed in distribution.yaml.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata: {name: hermes-noc-home}
@@ -19,7 +19,7 @@ spec:
       securityContext: {runAsNonRoot: true}
       containers:
         - name: hermes
-          image: REPLACE-registry/noc-engineer:latest      # built by deploy/Dockerfile
+          image: REPLACE-registry/noc-engineer:latest      # TBD: built by deploy/Dockerfile
           env:
             - {name: HERMES_HOME, value: /data/hermes}
             - {name: TZ, value: Asia/Jerusalem}             # cron schedules are local time

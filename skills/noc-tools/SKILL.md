@@ -1,6 +1,21 @@
 ---
 name: noc-tools
 description: "Read-only NOC tools: Prometheus metrics, ECK logs, Grafana alerts, Jira. Load before querying any NOC data."
+metadata:
+  hermes:
+    requires_toolsets: [terminal]
+required_environment_variables:
+  - {name: PROMETHEUS_URL, prompt: "Prometheus / Thanos Query URL"}
+  - {name: PROMETHEUS_TOKEN, prompt: "Prometheus read-only token (optional)"}
+  - {name: ECK_URL, prompt: "Elasticsearch URL"}
+  - {name: ECK_USER, prompt: "Elasticsearch read-only user"}
+  - {name: ECK_PASSWORD, prompt: "Elasticsearch password"}
+  - {name: GRAFANA_URL, prompt: "Grafana URL"}
+  - {name: GRAFANA_TOKEN, prompt: "Grafana viewer token"}
+  - {name: JIRA_URL, prompt: "Jira URL"}
+  - {name: JIRA_USER, prompt: "Jira user"}
+  - {name: JIRA_TOKEN, prompt: "Jira token"}
+  - {name: NOC_JIRA_ALLOW_COMMENT, prompt: "Allow Jira comments (true/false)"}
 ---
 
 # NOC tools

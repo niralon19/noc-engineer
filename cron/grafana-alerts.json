@@ -1,0 +1,8 @@
+{
+  "name": "grafana-alerts",
+  "schedule": "*/2 * * * *",
+  "script": "grafana_poll.py",
+  "skills": ["grafana-alert", "noc-tools", "noc-environment"],
+  "prompt": "Follow the grafana-alert skill on the new alerts above. If there are none, answer exactly [SILENT].",
+  "deliver": "slack"
+}

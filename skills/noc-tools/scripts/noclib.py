@@ -1,7 +1,7 @@
 """Shared library for the noc-tools CLI and the cron scripts. Stdlib + PyYAML only (both ship with Hermes).
 
-Config: $HERMES_HOME/noc.yaml (or NOC_CONFIG). ${VAR} / ${VAR:-default} are read from the environment, so secrets
-stay in .env / the k8s Secret. A value that is empty, TBD or REPLACE means "not configured": callers get a
+Config: skills/noc-tools/assets/noc.yaml (or NOC_CONFIG). ${VAR} / ${VAR:-default} are read from the environment
+(Hermes passes the skill's required_environment_variables through), so secrets stay in .env. A value that is empty, TBD or REPLACE means "not configured": callers get a
 `not_configured` error and must ask the team, never guess.
 """
 from __future__ import annotations
@@ -52,7 +52,7 @@ _CFG: Optional[dict] = None
 def config() -> dict:
     global _CFG
     if _CFG is None:
-        path = Path(os.environ.get("NOC_CONFIG") or HERMES_HOME / "noc.yaml")
+        path = Path(os.environ.get("NOC_CONFIG") or HERE.parent / "assets" / "noc.yaml")
         _CFG = _subst(yaml.safe_load(path.read_text()) or {}) if path.exists() else {}
     return _CFG
 
@@ -75,7 +75,7 @@ def need(sec: str, key: str) -> Any:
     v = section(sec).get(key)
     if is_tbd(v):
         raise NocError("not_configured", f"{sec}.{key} is not configured in noc.yaml. Do not guess: say what is "
-                                         f"missing and ask the NOC team owner (see OPEN-QUESTIONS.md).")
+                                         f"missing and ask the NOC team owner (see README: To fill).")
     return v
 
 

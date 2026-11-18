@@ -18,4 +18,4 @@ Customer problems usually surface as a rule's hermeticity or coupling degrading,
 5. Scope: which servers, partitions, pods, rules, customers. Is anything else affected?
 
 ## Environment knowledge
-TBD (Q6). Hop ids, the metric for each hop, and known failure patterns are added here by the NOC team. Until then, say which hop you could not measure instead of guessing a metric name.
+TBD. Hop ids, the metric for each hop, and known failure patterns are added here by the NOC team. Until then, say which hop you could not measure instead of guessing a metric name.

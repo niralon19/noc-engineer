@@ -1,0 +1,22 @@
+name: noc-engineer
+version: 0.2.0
+description: NOC agent - anomaly scan, daily summary, Slack questions, Grafana alerts, customer Jira tickets
+author: Nir Alon
+env_requires:
+  - {name: OPENAI_API_KEY, description: "Key for the Kimi K3 endpoint in config.yaml", required: true}
+  - {name: SLACK_BOT_TOKEN, description: "Slack bot token", required: true}
+  - {name: SLACK_APP_TOKEN, description: "Slack app token (Socket Mode)", required: true}
+  - {name: SLACK_ALLOWED_USERS, description: "Member IDs allowed to talk to the agent", required: true}
+  - {name: SLACK_HOME_CHANNEL, description: "Team channel for cron output", required: true}
+  - {name: PROMETHEUS_URL, description: "Prometheus / Thanos Query", required: true}
+  - {name: PROMETHEUS_TOKEN, description: "Read-only token", required: false}
+  - {name: ECK_URL, description: "Elasticsearch (ECK)", required: false}
+  - {name: ECK_USER, description: "Read-only user", required: false}
+  - {name: ECK_PASSWORD, description: "Read-only password", required: false}
+  - {name: GRAFANA_URL, description: "Grafana", required: false}
+  - {name: GRAFANA_TOKEN, description: "Viewer service-account token", required: false}
+  - {name: JIRA_URL, description: "Jira", required: false}
+  - {name: JIRA_USER, description: "Jira user (comment-only permission)", required: false}
+  - {name: JIRA_TOKEN, description: "Jira API token / PAT", required: false}
+  - {name: NOC_JIRA_ALLOW_COMMENT, description: "true lets the agent comment on customer tickets", required: false, default: "false"}
+distribution_owned: [SOUL.md, config.yaml, skills/, scripts/, cron/, distribution.yaml]

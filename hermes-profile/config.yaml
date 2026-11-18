@@ -1,6 +1,0 @@
-# Hermes config for this profile ($HERMES_HOME/config.yaml). Seeded on first start only; afterwards change it with
-# `hermes config set`. Secrets go to .env.
-model:
-  provider: custom
-  default: kimi-k3                              # Q1: exact model id (GET /v1/models)
-  base_url: "https://REPLACE-kimi-endpoint/v1"  # Q1

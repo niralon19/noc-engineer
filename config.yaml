@@ -1,0 +1,4 @@
+model:
+  provider: custom
+  default: kimi-k3                              # TBD: exact model id served by the endpoint
+  base_url: "https://REPLACE-kimi-endpoint/v1"  # TBD
