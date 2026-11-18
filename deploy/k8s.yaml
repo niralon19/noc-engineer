@@ -1,0 +1,32 @@
+# One pod: Hermes gateway (Slack + cron). Secret hermes-noc-env is created outside git from hermes-profile/.env.example.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: hermes-noc-home}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: {requests: {storage: 10Gi}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: hermes-noc}
+spec:
+  replicas: 1                     # exactly one: cron must not run twice; Slack Socket Mode = one connection
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app: hermes-noc}}
+  template:
+    metadata: {labels: {app: hermes-noc}}
+    spec:
+      securityContext: {runAsNonRoot: true}
+      containers:
+        - name: hermes
+          image: REPLACE-registry/noc-engineer:latest      # built by deploy/Dockerfile
+          env:
+            - {name: HERMES_HOME, value: /data/hermes}
+            - {name: TZ, value: Asia/Jerusalem}             # cron schedules are local time
+          envFrom: [{secretRef: {name: hermes-noc-env}}]
+          resources:
+            requests: {cpu: 250m, memory: 1Gi}
+            limits: {memory: 2Gi}
+          volumeMounts: [{name: home, mountPath: /data}]
+      volumes:
+        - {name: home, persistentVolumeClaim: {claimName: hermes-noc-home}}

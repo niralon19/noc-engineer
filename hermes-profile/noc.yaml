@@ -1,0 +1,55 @@
+# Backends for the noc-tools skill and the cron scripts. Lives at $HERMES_HOME/noc.yaml.
+# ${VAR} / ${VAR:-default} come from .env (k8s Secret). Anything empty/TBD returns "not_configured" (never guessed).
+
+http:
+  timeout_seconds: 20
+  verify_tls: true                 # or a CA bundle path
+
+prometheus:                        # Prometheus or Thanos Query (read-only)
+  url: ${PROMETHEUS_URL}
+  token: ${PROMETHEUS_TOKEN:-}
+  max_series: 50
+
+elasticsearch:                     # ECK
+  url: ${ECK_URL:-}
+  user: ${ECK_USER:-}
+  password: ${ECK_PASSWORD:-}
+  default_index: TBD               # Q4
+  timestamp_field: "@timestamp"
+  max_hits: 50
+
+grafana:
+  url: ${GRAFANA_URL:-}
+  token: ${GRAFANA_TOKEN:-}        # viewer service-account token
+
+jira:
+  url: ${JIRA_URL:-}
+  user: ${JIRA_USER:-}             # set -> basic auth with token; empty -> bearer PAT
+  token: ${JIRA_TOKEN:-}
+  customer_jql: TBD                # Q5: which tickets are customer issues the agent handles
+  max_results: 20
+  comment_marker: noc-engineer
+  allow_comment: ${NOC_JIRA_ALLOW_COMMENT:-false}
+
+pipeline:
+  hops: []                         # Q6: hop ids of the data path; when set, investigations must use them
+
+anomaly:
+  baseline: -7d                    # compare now vs the same moment last week
+  cooldown_minutes: 60             # do not re-report the same series/kind within this window
+  checks:                          # Q3: one entry per metric family. Query = instant vector, one series per entity.
+    - name: port_in_rate
+      query: TBD                   # e.g. sum by (instance) (rate(<rx bytes metric>[5m]))
+      min_ratio: 0.5               # defaults, tune with the team
+      max_ratio: 2.0
+      min_baseline: 0
+    - name: port_out_rate
+      query: TBD
+      min_ratio: 0.5
+      max_ratio: 2.0
+      min_baseline: 0
+    - name: rule_rate
+      query: TBD                   # e.g. sum by (rule_id) (rate(<rule match metric>[5m]))
+      min_ratio: 0.5
+      max_ratio: 2.0
+      min_baseline: 0

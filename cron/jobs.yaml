@@ -1,0 +1,28 @@
+# Hermes cron jobs, applied by cron/reconcile_cron.py on every pod start (`hermes cron create`).
+# Schedules are in the container timezone (TZ=Asia/Jerusalem in deploy/k8s.yaml).
+# script = file in $HERMES_HOME/scripts; its stdout is the agent's input. Empty output -> skill answers [SILENT].
+deliver: slack                     # SLACK_HOME_CHANNEL (the team channel)
+jobs:
+  - name: anomaly-scan
+    schedule: "*/5 * * * *"
+    script: anomaly_scan.py
+    skills: [anomaly-scan, noc-tools, noc-environment]
+    prompt: "Follow the anomaly-scan skill on the script output above. If it is empty, answer exactly [SILENT]."
+
+  - name: daily-summary
+    schedule: "0 9 * * *"
+    script: anomaly_digest.py
+    skills: [daily-summary, noc-tools]
+    prompt: "Follow the daily-summary skill on the digest above and write the 09:00 message for the team."
+
+  - name: grafana-alerts
+    schedule: "*/2 * * * *"
+    script: grafana_poll.py
+    skills: [grafana-alert, noc-tools, noc-environment]
+    prompt: "Follow the grafana-alert skill on the new alerts above. If there are none, answer exactly [SILENT]."
+
+  - name: jira-tickets
+    schedule: "*/5 * * * *"
+    script: jira_poll.py
+    skills: [jira-ticket, noc-tools, noc-environment]
+    prompt: "Follow the jira-ticket skill on the tickets above. If there are none, answer exactly [SILENT]."

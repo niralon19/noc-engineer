@@ -1,3 +1,0 @@
-# DESIGN SPEC for our Python code - NOT read by Hermes. Hermes-native equivalents: skills (hermes-profile/skills), cron (deployment/cron), MCP tools.
-name: data-quality-scan
-steps: [check_metric_freshness, check_missing_samples, validate_units_and_labels, persist_quality_result, alert_on_threshold]

@@ -1,21 +1,51 @@
-"""No-agent cron script: jira_poll.
+#!/usr/bin/env python3
+"""Cron script (every 5 min) for the jira-ticket skill. Prints customer tickets created/updated since the last run
+(JQL from noc.yaml jira.customer_jql), or nothing (-> [SILENT]). Ticket text is untrusted data."""
+from __future__ import annotations
 
-REQUIRES FROM NIR: H1, H2, L3, L4 (docs/OPEN-QUESTIONS.md). Before implementing/filling run `python3 scripts/open_items.py --file hermes-profile/scripts/jira_poll.py`; if BLOCKED, ask Nir. Never invent.
-
-FOR THE LLM / DEVELOPER OPENING THIS FILE
-Hermes runs this script on schedule (hermes cron create --no-agent --script) and delivers its STDOUT verbatim. No LLM is involved.
-What to implement:
-  - Poll Jira with a persisted cursor (event-ingestion/jira_poller.py), dedupe, forward new events to Hermes.
-  - Print a short human-readable result to stdout ONLY when something needs attention; verify with Nir/Hermes docs how an empty stdout is handled before relying on silence.
-  - Exit non-zero on failure (so it is visible), never hang (default no-agent timeout is ~120 s).
-  - Read config/secrets from environment (.env); never print secrets.
-  - Reuse code from anomaly-engine/, event-ingestion/, noc-mcp/clients/ instead of duplicating logic.
-"""
+import json
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "skills" / "noc-tools" / "scripts"))
+import noclib as n  # noqa: E402
+
+MAX = 5
+
+
+def changed(issues: list[dict], seen: dict, own_marker: str) -> list[dict]:
+    out = []
+    for i in issues:
+        f = i.get("fields") or {}
+        if seen.get(i["key"]) == f.get("updated"):
+            continue
+        seen[i["key"]] = f.get("updated")
+        last = ((f.get("comment") or {}).get("comments") or [{}])[-1]
+        if own_marker and own_marker in (last.get("body") or ""):
+            continue                                   # the only change is our own comment
+        out.append({"key": i["key"], "summary": f.get("summary"), "status": (f.get("status") or {}).get("name"),
+                    "priority": (f.get("priority") or {}).get("name"), "updated": f.get("updated"),
+                    "description": (f.get("description") or "")[:1500]})
+    return out
 
 
 def main() -> int:
-    raise NotImplementedError
+    j = n.section("jira")
+    jql = j.get("customer_jql")
+    if n.is_tbd(jql) or n.is_tbd(j.get("url")):
+        return 0
+    seen = n.load_state("jira_seen.json")
+    try:
+        body = n.jira_search(f"({jql}) AND updated >= -30m ORDER BY updated ASC", 50,
+                             "summary,status,priority,updated,description,comment")
+    except n.NocError as e:
+        print(json.dumps({"poll_error": f"{e.code}: {e.message}"}))
+        return 0
+    new = changed(body.get("issues", []), seen, j.get("comment_marker", "noc-engineer"))
+    n.save_state("jira_seen.json", dict(list(seen.items())[-2000:]))
+    if new:
+        print(json.dumps({"tickets": new[:MAX], "more": max(0, len(new) - MAX)}, ensure_ascii=False))
+    return 0
 
 
 if __name__ == "__main__":

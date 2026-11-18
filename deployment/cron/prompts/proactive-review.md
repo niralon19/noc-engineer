@@ -1,1 +1,0 @@
-The script output above contains anomaly-engine findings from the last 15 minutes. Follow the proactive-review skill. If the script output says NO_FINDINGS, respond exactly [SILENT]. Do not open or modify Jira.
